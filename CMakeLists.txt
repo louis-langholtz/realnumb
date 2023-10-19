@@ -36,7 +36,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Defaults the CMAKE_BUILD_TYPE to Release
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
+	set(CMAKE_BUILD_TYPE Release)
 endif()
 
 # Semicolon separated list of supported configuration types, only
@@ -49,10 +49,10 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release;" CACHE STRING "Semicolon separated
 # however and it'd be nice to use an option that works for both compilers. So use '-O3'.
 # For Visual Studio Compilers, the speed optimization flag is /O2, which is the default setting for release builds
 if(MSVC)
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-  add_definitions(-D_SCL_SECURE_NO_WARNINGS)
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+	add_definitions(-D_SCL_SECURE_NO_WARNINGS)
 else()
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 endif()
 
 string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" is_top_level)
@@ -62,6 +62,7 @@ string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" is_top_
 # Details at: https://cmake.org/cmake/help/v3.1/command/option.html
 option(REALNUMB_BUILD_UNITTEST "Build unit test console application." OFF)
 option(REALNUMB_ENABLE_COVERAGE "Enable code coverage generation." OFF)
+option(REALNUMB_INSTALL "Enable installation of PlayRho libs, includes, and CMake scripts." "${is_top_level}")
 
 set(LIB_INSTALL_DIR lib${LIB_SUFFIX})
 
@@ -70,12 +71,12 @@ set(LIB_INSTALL_DIR lib${LIB_SUFFIX})
 #   https://msdn.microsoft.com/en-us/library/1deeycx5.aspx
 # Perhaps this should be a build option for all platforms?
 if(MSVC)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -EHsc")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -EHsc")
 endif()
 
 # Make sure Microsoft Visual C++ (MSVC) uses the standards-conforming compiler behavior.
 if(MSVC)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /permissive-")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /permissive-")
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
@@ -84,7 +85,11 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 add_subdirectory(library)
 
 if(REALNUMB_BUILD_UNITTEST)
-  enable_testing()
-  add_subdirectory(unittest)
+	enable_testing()
+	add_subdirectory(unittest)
 endif()
 
+if(REALNUMB_INSTALL)
+	set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
+	include(CPack)
+endif()

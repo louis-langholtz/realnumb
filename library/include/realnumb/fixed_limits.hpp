@@ -17,13 +17,13 @@ public:
     static constexpr bool is_specialized = true; ///< Type is specialized.
 
     /// @brief Gets the min value available for the type.
-    static constexpr realnumb::fixed<BT,FB> min() noexcept { return realnumb::fixed<BT,FB>::GetMin(); }
+    static constexpr realnumb::fixed<BT,FB> min() noexcept { return realnumb::fixed<BT,FB>::get_min(); }
 
     /// @brief Gets the max value available for the type.
-    static constexpr realnumb::fixed<BT,FB> max() noexcept    { return realnumb::fixed<BT,FB>::GetMax(); }
+    static constexpr realnumb::fixed<BT,FB> max() noexcept    { return realnumb::fixed<BT,FB>::get_max(); }
 
     /// @brief Gets the lowest value available for the type.
-    static constexpr realnumb::fixed<BT,FB> lowest() noexcept { return realnumb::fixed<BT,FB>::GetLowest(); }
+    static constexpr realnumb::fixed<BT,FB> lowest() noexcept { return realnumb::fixed<BT,FB>::get_lowest(); }
 
     /// @brief Number of radix digits that can be represented.
     static constexpr int digits = realnumb::fixed<BT,FB>::whole_bits - 1;
@@ -66,10 +66,10 @@ public:
     static constexpr bool has_denorm_loss = false; ///< Has <code>denorm</code> loss amount.
 
     /// @brief Gets the infinite value for the type.
-    static constexpr realnumb::fixed<BT,FB> infinity() noexcept { return realnumb::fixed<BT,FB>::GetInfinity(); }
+    static constexpr realnumb::fixed<BT,FB> infinity() noexcept { return realnumb::fixed<BT,FB>::get_positive_infinity(); }
 
     /// @brief Gets the quiet NaN value for the type.
-    static constexpr realnumb::fixed<BT,FB> quiet_NaN() noexcept { return realnumb::fixed<BT,FB>::GetNaN(); }
+    static constexpr realnumb::fixed<BT,FB> quiet_NaN() noexcept { return realnumb::fixed<BT,FB>::get_nan(); }
 
     /// @brief Gets the signaling NaN value for the type.
     static constexpr realnumb::fixed<BT,FB> signaling_NaN() noexcept { return realnumb::fixed<BT,FB>{0}; }

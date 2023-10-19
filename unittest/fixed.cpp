@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
-#include "realnumb/fixed.hpp"
-#include "realnumb/fixed_limits.hpp"
-#include "realnumb/fixed_math.hpp"
+#include <realnumb/fixed.hpp>
+#include <realnumb/fixed_limits.hpp>
+#include <realnumb/fixed_math.hpp>
 
 #include <iostream>
 
@@ -24,14 +24,14 @@ TEST(fixed64, ByteSizeIs8)
 
 #endif
 
-// Tests of fixed<T>::GetFromUnsignedInt(v)
+// Tests of fixed<T>::to_value(v)
 
 #define DECL_GET_FROM_UNSIGNED_INT_TEST(type) \
-TEST(type, GetFromUnsignedInt) \
+TEST(type, to_value) \
 { \
-    EXPECT_EQ(type::GetFromUnsignedInt(0u),  0 * type::scale_factor); \
-    EXPECT_EQ(type::GetFromUnsignedInt(1u),  1 * type::scale_factor); \
-    EXPECT_EQ(type::GetFromUnsignedInt(2u),  2 * type::scale_factor); \
+    EXPECT_EQ(type::to_value(0u),  0 * type::scale_factor); \
+    EXPECT_EQ(type::to_value(1u),  1 * type::scale_factor); \
+    EXPECT_EQ(type::to_value(2u),  2 * type::scale_factor); \
 }
 
 DECL_GET_FROM_UNSIGNED_INT_TEST(fixed32)
@@ -39,16 +39,16 @@ DECL_GET_FROM_UNSIGNED_INT_TEST(fixed32)
 DECL_GET_FROM_UNSIGNED_INT_TEST(fixed64)
 #endif
 
-// Tests of fixed<T>::GetFromSignedInt(v)
+// Tests of fixed<T>::to_value(v)
 
 #define DECL_GET_FROM_SIGNED_INT_TEST(type) \
-TEST(type, GetFromSignedInt) \
+TEST(type, to_value_from_signed_int) \
 { \
-    EXPECT_EQ(type::GetFromSignedInt( 0),  0 * type::scale_factor); \
-    EXPECT_EQ(type::GetFromSignedInt( 1),  1 * type::scale_factor); \
-    EXPECT_EQ(type::GetFromSignedInt( 2),  2 * type::scale_factor); \
-    EXPECT_EQ(type::GetFromSignedInt(-1), -1 * type::scale_factor); \
-    EXPECT_EQ(type::GetFromSignedInt(-2), -2 * type::scale_factor); \
+    EXPECT_EQ(type::to_value( 0),  0 * type::scale_factor); \
+    EXPECT_EQ(type::to_value( 1),  1 * type::scale_factor); \
+    EXPECT_EQ(type::to_value( 2),  2 * type::scale_factor); \
+    EXPECT_EQ(type::to_value(-1), -1 * type::scale_factor); \
+    EXPECT_EQ(type::to_value(-2), -2 * type::scale_factor); \
 }
 
 DECL_GET_FROM_SIGNED_INT_TEST(fixed32)
@@ -56,24 +56,24 @@ DECL_GET_FROM_SIGNED_INT_TEST(fixed32)
 DECL_GET_FROM_SIGNED_INT_TEST(fixed64)
 #endif
 
-// Tests of fixed<T>::GetFromFloat(v)
+// Tests of fixed<T>::to_value(v)
 
 #define DECL_GET_FROM_FLOAT_TEST(type) \
-TEST(type, GetFromFloat) \
+TEST(type, to_value_from_float) \
 { \
-    EXPECT_EQ(type::GetFromFloat( 0.0),  0 * type::scale_factor); \
-    EXPECT_EQ(type::GetFromFloat( 1.0),  1 * type::scale_factor); \
-    EXPECT_EQ(type::GetFromFloat( 2.0),  2 * type::scale_factor); \
-    EXPECT_EQ(type::GetFromFloat(-1.0), -1 * type::scale_factor); \
-    EXPECT_EQ(type::GetFromFloat(-2.0), -2 * type::scale_factor); \
-    EXPECT_EQ(type::GetFromFloat(-4.7), static_cast<type::value_type>(-4.7 * type::scale_factor)); \
+    EXPECT_EQ(type::to_value( 0.0),  0 * type::scale_factor); \
+    EXPECT_EQ(type::to_value( 1.0),  1 * type::scale_factor); \
+    EXPECT_EQ(type::to_value( 2.0),  2 * type::scale_factor); \
+    EXPECT_EQ(type::to_value(-1.0), -1 * type::scale_factor); \
+    EXPECT_EQ(type::to_value(-2.0), -2 * type::scale_factor); \
+    EXPECT_EQ(type::to_value(-4.7), static_cast<type::value_type>(-4.7 * type::scale_factor)); \
     const auto long_double_max = std::numeric_limits<long double>::max(); \
-    const auto fixed_infinity = type::GetInfinity(); \
+    const auto fixed_infinity = type::get_positive_infinity(); \
     const auto fixed_infinity_as_vt = *reinterpret_cast<const type::value_type*>(&fixed_infinity); \
-    EXPECT_EQ(type::GetFromFloat( long_double_max),  fixed_infinity_as_vt); \
-    EXPECT_EQ(type::GetFromFloat(-long_double_max), -fixed_infinity_as_vt); \
-    EXPECT_EQ(type::GetFromFloat( std::numeric_limits<float>::infinity()),  fixed_infinity_as_vt); \
-    EXPECT_EQ(type::GetFromFloat(-std::numeric_limits<float>::infinity()), -fixed_infinity_as_vt); \
+    EXPECT_EQ(type::to_value( long_double_max),  fixed_infinity_as_vt); \
+    EXPECT_EQ(type::to_value(-long_double_max), -fixed_infinity_as_vt); \
+    EXPECT_EQ(type::to_value( std::numeric_limits<float>::infinity()),  fixed_infinity_as_vt); \
+    EXPECT_EQ(type::to_value(-std::numeric_limits<float>::infinity()), -fixed_infinity_as_vt); \
 }
 
 DECL_GET_FROM_FLOAT_TEST(fixed32)
@@ -105,9 +105,9 @@ DECL_INT_CONSTRUCTION_AND_COMPARE_TEST(fixed64)
 TEST(type, isfinite) \
 { \
     EXPECT_TRUE(isfinite(type(0))); \
-    EXPECT_FALSE(isfinite( type::GetInfinity())); \
-    EXPECT_FALSE(isfinite(-type::GetInfinity())); \
-    EXPECT_FALSE(isfinite(type::GetNaN())); \
+    EXPECT_FALSE(isfinite( type::get_positive_infinity())); \
+    EXPECT_FALSE(isfinite(-type::get_positive_infinity())); \
+    EXPECT_FALSE(isfinite(type::get_nan())); \
 }
 
 DECL_ISFINITE_TEST(fixed32)
@@ -123,10 +123,10 @@ TEST(type, isnan) \
     EXPECT_FALSE(isnan(type( 0))); \
     EXPECT_FALSE(isnan(type( 1))); \
     EXPECT_FALSE(isnan(type(-1))); \
-    EXPECT_FALSE(isnan( type::GetInfinity())); \
-    EXPECT_FALSE(isnan(-type::GetInfinity())); \
-    EXPECT_FALSE(isnan( type::GetNegativeInfinity())); \
-    EXPECT_TRUE(isnan(type::GetNaN())); \
+    EXPECT_FALSE(isnan( type::get_positive_infinity())); \
+    EXPECT_FALSE(isnan(-type::get_positive_infinity())); \
+    EXPECT_FALSE(isnan( type::get_negative_infinity())); \
+    EXPECT_TRUE(isnan(type::get_nan())); \
     EXPECT_TRUE(isnan(type(std::numeric_limits<float>::quiet_NaN()))); \
     EXPECT_TRUE(isnan(type(std::numeric_limits<float>::signaling_NaN()))); \
     EXPECT_TRUE(isnan(type(std::numeric_limits<double>::quiet_NaN()))); \
@@ -200,9 +200,9 @@ TEST(fixed32, FloatConstruction)
     EXPECT_EQ(fixed32(-1.0), -1.0);
     EXPECT_EQ(fixed32(+1.0), +1.0);
 
-    EXPECT_EQ(fixed32(std::numeric_limits<float>::infinity()), fixed32::GetInfinity());
-    EXPECT_EQ(fixed32(-std::numeric_limits<float>::infinity()), -fixed32::GetInfinity());
-    EXPECT_EQ(fixed32(-std::numeric_limits<float>::infinity()), fixed32::GetNegativeInfinity());
+    EXPECT_EQ(fixed32(std::numeric_limits<float>::infinity()), fixed32::get_positive_infinity());
+    EXPECT_EQ(fixed32(-std::numeric_limits<float>::infinity()), -fixed32::get_positive_infinity());
+    EXPECT_EQ(fixed32(-std::numeric_limits<float>::infinity()), fixed32::get_negative_infinity());
     EXPECT_TRUE(isnan(fixed32(std::numeric_limits<float>::quiet_NaN())));
     EXPECT_TRUE(isnan(fixed32(std::numeric_limits<float>::signaling_NaN())));
 
@@ -215,14 +215,14 @@ TEST(fixed32, FloatConstruction)
     }
 }
 
-TEST(fixed32, GetMin)
+TEST(fixed32, get_min)
 {
-    EXPECT_NEAR(static_cast<double>(fixed32::GetMin()), 0.001953125, 0.00001);
+    EXPECT_NEAR(static_cast<double>(fixed32::get_min()), 0.001953125, 0.00001);
 }
 
-TEST(fixed32, GetMax)
+TEST(fixed32, get_max)
 {
-    EXPECT_NEAR(static_cast<double>(fixed32::GetMax()), 4194303.99609375,
+    EXPECT_NEAR(static_cast<double>(fixed32::get_max()), 4194303.99609375,
                 0.0001);
 }
 
@@ -237,14 +237,14 @@ TEST(fixed32, limits)
 }
 
 #ifdef REALNUMB_INT128
-TEST(fixed64, GetMin)
+TEST(fixed64, get_min)
 {
-    EXPECT_NEAR(static_cast<double>(fixed64::GetMin()), 5.9604644775390625e-08, 0.0);
+    EXPECT_NEAR(static_cast<double>(fixed64::get_min()), 5.9604644775390625e-08, 0.0);
 }
 
-TEST(fixed64, GetMax)
+TEST(fixed64, get_max)
 {
-    EXPECT_NEAR(static_cast<double>(fixed64::GetMax()), 549755813888, 0.0);
+    EXPECT_NEAR(static_cast<double>(fixed64::get_max()), 549755813888, 0.0);
 }
 #endif
 
@@ -289,12 +289,12 @@ TEST(fixed32, Addition)
 
 TEST(fixed32, InfinityPlusValidIsInfinity)
 {
-    EXPECT_EQ(fixed32::GetInfinity() + 0, fixed32::GetInfinity());
-    EXPECT_EQ(fixed32::GetInfinity() + 1, fixed32::GetInfinity());
-    EXPECT_EQ(fixed32::GetInfinity() + 100, fixed32::GetInfinity());
-    EXPECT_EQ(fixed32::GetInfinity() + -1, fixed32::GetInfinity());
-    EXPECT_EQ(fixed32::GetInfinity() + -100, fixed32::GetInfinity());
-    EXPECT_EQ(fixed32::GetInfinity() + fixed32::GetInfinity(), fixed32::GetInfinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() + 0, fixed32::get_positive_infinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() + 1, fixed32::get_positive_infinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() + 100, fixed32::get_positive_infinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() + -1, fixed32::get_positive_infinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() + -100, fixed32::get_positive_infinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() + fixed32::get_positive_infinity(), fixed32::get_positive_infinity());
 }
 
 TEST(fixed32, EqualSubtraction)
@@ -389,7 +389,7 @@ TEST(fixed32, log)
     ASSERT_NEAR(static_cast<double>(log(491.721)), 6.1979114824747752, 0.01);
     EXPECT_NEAR(static_cast<double>(log(fixed32(491.721))), log(491.721), 1.517);
     
-    EXPECT_EQ(static_cast<double>(log(fixed32::GetInfinity())), log(std::numeric_limits<double>::infinity()));
+    EXPECT_EQ(static_cast<double>(log(fixed32::get_positive_infinity())), log(std::numeric_limits<double>::infinity()));
 }
 
 TEST(fixed32, exp)
@@ -448,15 +448,15 @@ TEST(fixed32, intpow)
     EXPECT_NEAR(static_cast<double>(pow(fixed32(0), +1)), 0.0, 0.0);
     EXPECT_FALSE(isfinite(static_cast<double>(pow(fixed32(0), -1))));
 
-    EXPECT_EQ(static_cast<double>(pow(fixed32::GetNegativeInfinity(), -1)),
+    EXPECT_EQ(static_cast<double>(pow(fixed32::get_negative_infinity(), -1)),
               pow(-std::numeric_limits<double>::infinity(), -1));
-    EXPECT_EQ(static_cast<double>(pow(fixed32::GetNegativeInfinity(), +1)),
+    EXPECT_EQ(static_cast<double>(pow(fixed32::get_negative_infinity(), +1)),
               pow(-std::numeric_limits<double>::infinity(), +1));
-    EXPECT_EQ(static_cast<double>(pow(fixed32::GetNegativeInfinity(), +2)),
+    EXPECT_EQ(static_cast<double>(pow(fixed32::get_negative_infinity(), +2)),
               pow(-std::numeric_limits<double>::infinity(), +2));
-    EXPECT_EQ(static_cast<double>(pow(fixed32::GetInfinity(), +2)),
+    EXPECT_EQ(static_cast<double>(pow(fixed32::get_positive_infinity(), +2)),
               pow(std::numeric_limits<double>::infinity(), +2));
-    EXPECT_EQ(static_cast<double>(pow(fixed32::GetInfinity(), -2)),
+    EXPECT_EQ(static_cast<double>(pow(fixed32::get_positive_infinity(), -2)),
               pow(std::numeric_limits<double>::infinity(), -2));
 
     EXPECT_NEAR(static_cast<double>(pow(fixed32(0), 1)), pow(0.0, 1), 0.0);
@@ -518,14 +518,14 @@ TEST(fixed32, regpow)
 
 TEST(fixed32, sqrt)
 {
-    const auto tolerance = static_cast<double>(fixed32::GetMin());
+    const auto tolerance = static_cast<double>(fixed32::get_min());
 
     EXPECT_TRUE(isnan(sqrt(fixed32{-1})));
-    EXPECT_TRUE(isnan(sqrt(fixed32::GetNaN())));
+    EXPECT_TRUE(isnan(sqrt(fixed32::get_nan())));
     EXPECT_EQ(sqrt(fixed32{0}), fixed32{0});
-    EXPECT_EQ(sqrt(fixed32::GetInfinity()), fixed32::GetInfinity());
-    EXPECT_EQ(sqrt(fixed32::GetMin()), fixed32(0.046875));
-    EXPECT_EQ((sqrt(fixed32::GetMin()) * sqrt(fixed32::GetMin())), fixed32::GetMin());
+    EXPECT_EQ(sqrt(fixed32::get_positive_infinity()), fixed32::get_positive_infinity());
+    EXPECT_EQ(sqrt(fixed32::get_min()), fixed32(0.046875));
+    EXPECT_EQ((sqrt(fixed32::get_min()) * sqrt(fixed32::get_min())), fixed32::get_min());
     EXPECT_EQ(sqrt(fixed32{1}), fixed32{1});
     EXPECT_NEAR(static_cast<double>(sqrt(fixed32{0.25})), 0.5, 0.0);
     EXPECT_NEAR(static_cast<double>(sqrt(fixed32{0.0625})), 0.25, tolerance);
@@ -542,7 +542,7 @@ TEST(fixed32, sqrt)
         {
             break;
         }
-        EXPECT_LE(abs((sqrt(fixedv) * sqrt(fixedv)) - fixedv), fixed32::GetMin());
+        EXPECT_LE(abs((sqrt(fixedv) * sqrt(fixedv)) - fixedv), fixed32::get_min());
         EXPECT_NEAR(static_cast<double>(sqrt(fixedv)), sqrt(static_cast<double>(fixedv)), tolerance * 5);
     }
     const auto maxV = static_cast<double>(std::numeric_limits<fixed32>::max());
@@ -550,7 +550,7 @@ TEST(fixed32, sqrt)
     {
         const auto fixedv = fixed32{v};
         EXPECT_NEAR(static_cast<double>(sqrt(fixedv)), sqrt(v), tolerance);
-        //EXPECT_LE(abs(Square(sqrt(fixedv)) - fixedv), fixed32::GetMin() * 5);
+        //EXPECT_LE(abs(Square(sqrt(fixedv)) - fixedv), fixed32::get_min() * 5);
     }
 }
 
@@ -678,9 +678,9 @@ TEST(fixed64, cos)
 
 TEST(fixed32, atan)
 {
-    EXPECT_NEAR(static_cast<double>(atan(fixed32::GetInfinity())),
+    EXPECT_NEAR(static_cast<double>(atan(fixed32::get_positive_infinity())),
                 atan(std::numeric_limits<double>::infinity()), 0.001);
-    EXPECT_NEAR(static_cast<double>(atan(fixed32::GetNegativeInfinity())),
+    EXPECT_NEAR(static_cast<double>(atan(fixed32::get_negative_infinity())),
                 atan(-std::numeric_limits<double>::infinity()), 0.001);
 }
 
@@ -714,44 +714,42 @@ TEST(fixed32, Max)
     const auto max_internal_val = std::numeric_limits<int32_t>::max() - 1;
     const auto max_fixed32 = *reinterpret_cast<const fixed32*>(&max_internal_val);
     
-    EXPECT_EQ(fixed32::GetMax(), fixed32::GetMax());
-    EXPECT_EQ(fixed32::GetMax(), max_fixed32);
-    //EXPECT_EQ(static_cast<long double>(fixed32::GetMax()), 131071.99993896484375000000L);
-    //std::cout << std::setprecision(22) << static_cast<long double>(fixed32::GetMax()) << std::endl;
+    EXPECT_EQ(fixed32::get_max(), fixed32::get_max());
+    EXPECT_EQ(fixed32::get_max(), max_fixed32);
+    //EXPECT_EQ(static_cast<long double>(fixed32::get_max()), 131071.99993896484375000000L);
+    //std::cout << std::setprecision(22) << static_cast<long double>(fixed32::get_max()) << std::endl;
     switch (fixed32::fraction_bits)
     {
         case  9:
-            EXPECT_NEAR(static_cast<double>(fixed32::GetMax()), 4.1943e+06, 4.0);
+            EXPECT_NEAR(static_cast<double>(fixed32::get_max()), 4.1943e+06, 4.0);
             break;
         case 14:
-            EXPECT_EQ(static_cast<double>(fixed32::GetMax()), 131071.9998779296875);
+            EXPECT_EQ(static_cast<double>(fixed32::get_max()), 131071.9998779296875);
             break;
     }
 
-    EXPECT_GT(fixed32::GetMax(), fixed32(0));
-    EXPECT_GT(fixed32::GetMax(), fixed32::GetMin());
-    EXPECT_GT(fixed32::GetMax(), fixed32::GetLowest());
-    EXPECT_GT(fixed32::GetMax(), fixed32((1 << (31u - fixed32::fraction_bits)) - 1));
+    EXPECT_GT(fixed32::get_max(), fixed32(0));
+    EXPECT_GT(fixed32::get_max(), fixed32::get_min());
+    EXPECT_GT(fixed32::get_max(), fixed32::get_lowest());
+    EXPECT_GT(fixed32::get_max(), fixed32((1 << (31u - fixed32::fraction_bits)) - 1));
 }
 
 TEST(fixed32, Min)
 {
-    EXPECT_EQ(fixed32::GetMin(), fixed32::GetMin());
-    EXPECT_EQ(fixed32::GetMin(), fixed32(0, 1));
+    EXPECT_EQ(fixed32::get_min(), fixed32::get_min());
+    EXPECT_EQ(fixed32::get_min(), fixed32(0, 1));
     switch (fixed32::fraction_bits)
     {
         case  9:
-            EXPECT_NEAR(static_cast<double>(fixed32::GetMin()), 0.00195312, 0.0000001);
+            EXPECT_NEAR(static_cast<double>(fixed32::get_min()), 0.00195312, 0.0000001);
             break;
         case 14:
-            EXPECT_EQ(static_cast<double>(fixed32::GetMin()), 0.00006103515625000000);
+            EXPECT_EQ(static_cast<double>(fixed32::get_min()), 0.00006103515625000000);
             break;
     }
-
-    EXPECT_LT(fixed32::GetMin(), fixed32::GetMax());
-    
-    EXPECT_GT(fixed32::GetMin(), fixed32(0));
-    EXPECT_GT(fixed32::GetMin(), fixed32::GetLowest());
+    EXPECT_LT(fixed32::get_min(), fixed32::get_max());
+    EXPECT_GT(fixed32::get_min(), fixed32(0));
+    EXPECT_GT(fixed32::get_min(), fixed32::get_lowest());
 }
 
 TEST(fixed32, Lowest)
@@ -759,120 +757,120 @@ TEST(fixed32, Lowest)
     const auto lowest_internal_val = std::numeric_limits<int32_t>::min() + 2;
     const auto lowest_fixed32 = *reinterpret_cast<const fixed32*>(&lowest_internal_val);
 
-    EXPECT_EQ(fixed32::GetLowest(), fixed32::GetLowest());
-    EXPECT_EQ(fixed32::GetLowest(), lowest_fixed32);
-    //EXPECT_EQ(static_cast<long double>(fixed32::GetLowest()), -131072.00000000000000000000L);
-    //std::cout << std::setprecision(22) << static_cast<long double>(fixed32::GetLowest()) << std::endl;
+    EXPECT_EQ(fixed32::get_lowest(), fixed32::get_lowest());
+    EXPECT_EQ(fixed32::get_lowest(), lowest_fixed32);
+    //EXPECT_EQ(static_cast<long double>(fixed32::get_lowest()), -131072.00000000000000000000L);
+    //std::cout << std::setprecision(22) << static_cast<long double>(fixed32::get_lowest()) << std::endl;
     switch (fixed32::fraction_bits)
     {
         case  9:
-            EXPECT_NEAR(static_cast<double>(fixed32::GetLowest()), -4.1943e+06, 4.0);
+            EXPECT_NEAR(static_cast<double>(fixed32::get_lowest()), -4.1943e+06, 4.0);
             break;
         case 14:
-            EXPECT_EQ(static_cast<double>(fixed32::GetLowest()), -131071.9998779296875);
+            EXPECT_EQ(static_cast<double>(fixed32::get_lowest()), -131071.9998779296875);
             break;
     }
-    EXPECT_LT(fixed32::GetLowest(), fixed32(0));
-    EXPECT_LT(fixed32::GetLowest(), fixed32(-((1 << (31u - fixed32::fraction_bits)) - 1), 0u));
-    EXPECT_LT(fixed32::GetLowest(), fixed32(-((1 << (31u - fixed32::fraction_bits)) - 1), (1u << fixed32::fraction_bits) - 1u));
-    EXPECT_EQ(fixed32::GetLowest(), -fixed32::GetMax());
+    EXPECT_LT(fixed32::get_lowest(), fixed32(0));
+    EXPECT_LT(fixed32::get_lowest(), fixed32(-((1 << (31u - fixed32::fraction_bits)) - 1), 0u));
+    EXPECT_LT(fixed32::get_lowest(), fixed32(-((1 << (31u - fixed32::fraction_bits)) - 1), (1u << fixed32::fraction_bits) - 1u));
+    EXPECT_EQ(fixed32::get_lowest(), -fixed32::get_max());
 }
 
 TEST(fixed32, SubtractingFromLowestGetsNegativeInfinity)
 {
-    EXPECT_EQ(fixed32::GetLowest() - fixed32::GetMin(), fixed32::GetNegativeInfinity());
-    EXPECT_EQ(fixed32::GetLowest() - 1, fixed32::GetNegativeInfinity());
+    EXPECT_EQ(fixed32::get_lowest() - fixed32::get_min(), fixed32::get_negative_infinity());
+    EXPECT_EQ(fixed32::get_lowest() - 1, fixed32::get_negative_infinity());
 }
 
 TEST(fixed32, AddingToMaxGetsInfinity)
 {
-    EXPECT_EQ(fixed32::GetMax() + fixed32::GetMin(), fixed32::GetInfinity());
-    EXPECT_EQ(fixed32::GetMax() + 1, fixed32::GetInfinity());
+    EXPECT_EQ(fixed32::get_max() + fixed32::get_min(), fixed32::get_positive_infinity());
+    EXPECT_EQ(fixed32::get_max() + 1, fixed32::get_positive_infinity());
 }
 
 TEST(fixed32, MinusInfinityEqualsNegativeInfinity)
 {
-    EXPECT_EQ(-fixed32::GetInfinity(), fixed32::GetNegativeInfinity());
+    EXPECT_EQ(-fixed32::get_positive_infinity(), fixed32::get_negative_infinity());
 }
 
 TEST(fixed32, InfinityEqualsMinusNegativeInfinity)
 {
-    EXPECT_EQ(fixed32::GetInfinity(), -fixed32::GetNegativeInfinity());
+    EXPECT_EQ(fixed32::get_positive_infinity(), -fixed32::get_negative_infinity());
 }
 
 TEST(fixed32, InifnityTimesPositiveIsInfinity)
 {
-    EXPECT_EQ(fixed32::GetInfinity() * 1, fixed32::GetInfinity());
-    EXPECT_EQ(fixed32::GetInfinity() * 2, fixed32::GetInfinity());
-    EXPECT_EQ(fixed32::GetInfinity() * 0.5, fixed32::GetInfinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() * 1, fixed32::get_positive_infinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() * 2, fixed32::get_positive_infinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() * 0.5, fixed32::get_positive_infinity());
 }
 
 TEST(fixed32, InifnityDividedByPositiveIsInfinity)
 {
-    EXPECT_EQ(fixed32::GetInfinity() / 1, fixed32::GetInfinity());
-    EXPECT_EQ(fixed32::GetInfinity() / 2, fixed32::GetInfinity());
-    EXPECT_EQ(fixed32::GetInfinity() / 0.5, fixed32::GetInfinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() / 1, fixed32::get_positive_infinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() / 2, fixed32::get_positive_infinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() / 0.5, fixed32::get_positive_infinity());
 }
 
 TEST(fixed32, InfinityDividedByInfinityIsNaN)
 {
-    EXPECT_TRUE(isnan(fixed32::GetInfinity() / fixed32::GetInfinity()));
+    EXPECT_TRUE(isnan(fixed32::get_positive_infinity() / fixed32::get_positive_infinity()));
 }
 
 TEST(fixed32, InifnityTimesNegativeIsNegativeInfinity)
 {
-    EXPECT_EQ(fixed32::GetInfinity() * -1, -fixed32::GetInfinity());
-    EXPECT_EQ(fixed32::GetInfinity() * -2, -fixed32::GetInfinity());
-    EXPECT_EQ(fixed32::GetInfinity() * -0.5, -fixed32::GetInfinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() * -1, -fixed32::get_positive_infinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() * -2, -fixed32::get_positive_infinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() * -0.5, -fixed32::get_positive_infinity());
 }
 
 TEST(fixed32, InifnityDividedByNegativeIsNegativeInfinity)
 {
-    EXPECT_EQ(fixed32::GetInfinity() / -1, -fixed32::GetInfinity());
-    EXPECT_EQ(fixed32::GetInfinity() / -2, -fixed32::GetInfinity());
-    EXPECT_EQ(fixed32::GetInfinity() / -0.5, -fixed32::GetInfinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() / -1, -fixed32::get_positive_infinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() / -2, -fixed32::get_positive_infinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() / -0.5, -fixed32::get_positive_infinity());
 }
 
 TEST(fixed32, InfinityMinusNegativeInfinityIsInfinity)
 {
-    EXPECT_EQ(fixed32::GetInfinity() - -fixed32::GetInfinity(), fixed32::GetInfinity());
+    EXPECT_EQ(fixed32::get_positive_infinity() - -fixed32::get_positive_infinity(), fixed32::get_positive_infinity());
 }
 
 TEST(fixed32, NegativeInfinityMinusInfinityIsNegativeInfinity)
 {
-    EXPECT_EQ(-fixed32::GetInfinity() - fixed32::GetInfinity(), -fixed32::GetInfinity());
+    EXPECT_EQ(-fixed32::get_positive_infinity() - fixed32::get_positive_infinity(), -fixed32::get_positive_infinity());
 }
 
 TEST(fixed32, NaN)
 {
-    EXPECT_TRUE(isnan(fixed32::GetNaN()));
-    EXPECT_TRUE(isnan(fixed32::GetInfinity() / fixed32::GetInfinity()));
-    EXPECT_TRUE(isnan(fixed32::GetInfinity() - fixed32::GetInfinity()));
-    EXPECT_TRUE(isnan(-fixed32::GetInfinity() - -fixed32::GetInfinity()));
-    EXPECT_TRUE(isnan(-fixed32::GetInfinity() + fixed32::GetInfinity()));
+    EXPECT_TRUE(isnan(fixed32::get_nan()));
+    EXPECT_TRUE(isnan(fixed32::get_positive_infinity() / fixed32::get_positive_infinity()));
+    EXPECT_TRUE(isnan(fixed32::get_positive_infinity() - fixed32::get_positive_infinity()));
+    EXPECT_TRUE(isnan(-fixed32::get_positive_infinity() - -fixed32::get_positive_infinity()));
+    EXPECT_TRUE(isnan(-fixed32::get_positive_infinity() + fixed32::get_positive_infinity()));
 
     EXPECT_FALSE(isnan(fixed32{0}));
     EXPECT_FALSE(isnan(fixed32{10.0f}));
     EXPECT_FALSE(isnan(fixed32{-10.0f}));
-    EXPECT_FALSE(isnan(fixed32::GetInfinity()));
-    EXPECT_FALSE(isnan(fixed32::GetNegativeInfinity()));
-    EXPECT_FALSE(isnan(fixed32::GetMax()));
-    EXPECT_FALSE(isnan(fixed32::GetMin()));
-    EXPECT_FALSE(isnan(fixed32::GetLowest()));
+    EXPECT_FALSE(isnan(fixed32::get_positive_infinity()));
+    EXPECT_FALSE(isnan(fixed32::get_negative_infinity()));
+    EXPECT_FALSE(isnan(fixed32::get_max()));
+    EXPECT_FALSE(isnan(fixed32::get_min()));
+    EXPECT_FALSE(isnan(fixed32::get_lowest()));
 }
 
 TEST(fixed32, InfinityTimesZeroIsNaN)
 {
-    EXPECT_TRUE(isnan(fixed32::GetInfinity() * 0));
+    EXPECT_TRUE(isnan(fixed32::get_positive_infinity() * 0));
 }
 
 TEST(fixed32, Comparators)
 {
-    EXPECT_FALSE(fixed32::GetNaN() > 0.0f);
-    EXPECT_FALSE(fixed32::GetNaN() < 0.0f);
-    EXPECT_FALSE(fixed32::GetNaN() == 0.0f);
-    EXPECT_TRUE(fixed32::GetNaN() != 0.0f);
-    EXPECT_FALSE(fixed32::GetNaN() == fixed32::GetNaN());
+    EXPECT_FALSE(fixed32::get_nan() > 0.0f);
+    EXPECT_FALSE(fixed32::get_nan() < 0.0f);
+    EXPECT_FALSE(fixed32::get_nan() == 0.0f);
+    EXPECT_TRUE(fixed32::get_nan() != 0.0f);
+    EXPECT_FALSE(fixed32::get_nan() == fixed32::get_nan());
 }
 
 TEST(fixed32, BiggerValsIdenticallyInaccurate)
@@ -909,11 +907,11 @@ TEST(fixed32, AdditionAssignment)
 {
     fixed32 foo;
     foo = 0;
-    foo += fixed32::GetNegativeInfinity();
+    foo += fixed32::get_negative_infinity();
     EXPECT_EQ(foo, -std::numeric_limits<fixed32>::infinity());
     foo = std::numeric_limits<fixed32>::lowest();
     foo += -1;
-    EXPECT_EQ(foo, fixed32::GetNegativeInfinity());
+    EXPECT_EQ(foo, fixed32::get_negative_infinity());
 }
 
 TEST(fixed32, SubtractionAssignment)
@@ -927,46 +925,46 @@ TEST(fixed32, SubtractionAssignment)
     EXPECT_EQ(foo, fixed32{-1});
     foo = std::numeric_limits<fixed32>::max();
     foo -= fixed32{-2};
-    EXPECT_EQ(foo, fixed32::GetInfinity());
+    EXPECT_EQ(foo, fixed32::get_positive_infinity());
 }
 
 TEST(fixed32, MultiplicationAssignment)
 {
     fixed32 foo;
-    foo = fixed32::GetNaN();
+    foo = fixed32::get_nan();
     foo *= fixed32{0};
     EXPECT_TRUE(foo.isnan());
     foo = 0;
-    foo *= fixed32::GetNaN();
+    foo *= fixed32::get_nan();
     EXPECT_TRUE(foo.isnan());
     foo = std::numeric_limits<fixed32>::min();
     foo *= std::numeric_limits<fixed32>::min();
     EXPECT_EQ(foo, fixed32(0));
     foo = std::numeric_limits<fixed32>::lowest();
     foo *= 2;
-    EXPECT_EQ(foo, fixed32::GetNegativeInfinity());
+    EXPECT_EQ(foo, fixed32::get_negative_infinity());
 }
 
 TEST(fixed32, DivisionAssignment)
 {
     fixed32 foo;
-    foo = fixed32::GetNaN();
+    foo = fixed32::get_nan();
     foo /= fixed32{1};
     EXPECT_TRUE(foo.isnan());
     foo = 0;
-    foo /= fixed32::GetNaN();
+    foo /= fixed32::get_nan();
     EXPECT_TRUE(foo.isnan());
     foo = 1;
-    foo /= fixed32::GetInfinity();
+    foo /= fixed32::get_positive_infinity();
     EXPECT_EQ(foo, fixed32(0));
     foo = std::numeric_limits<fixed32>::max();
     ASSERT_EQ(foo, std::numeric_limits<fixed32>::max());
     foo /= fixed32(0.5f);
-    EXPECT_EQ(foo, fixed32::GetInfinity());
+    EXPECT_EQ(foo, fixed32::get_positive_infinity());
     foo = std::numeric_limits<fixed32>::lowest();
     ASSERT_TRUE(foo.isfinite());
     foo /= fixed32(0.5);
-    EXPECT_EQ(foo, fixed32::GetNegativeInfinity());
+    EXPECT_EQ(foo, fixed32::get_negative_infinity());
 }
 
 TEST(fixed32, GetSign)

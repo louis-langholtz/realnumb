@@ -50,7 +50,7 @@ constexpr auto factorial(std::int64_t n)
 /// @see https://en.wikipedia.org/wiki/Exponentiation
 /// @see https://en.wikipedia.org/wiki/Exponential_function
 template <typename BT, unsigned int FB, int N = DefaultExpIterations>
-constexpr fixed<BT, FB> exp(fixed<BT, FB> arg)
+constexpr auto exp(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
     const auto doReciprocal = (arg < 0);
     if (doReciprocal)
@@ -81,23 +81,23 @@ constexpr fixed<BT, FB> exp(fixed<BT, FB> arg)
 /// @see https://en.cppreference.com/w/cpp/numeric/math/log
 /// @see https://en.wikipedia.org/wiki/Natural_logarithm
 template <typename BT, unsigned int FB, int N = DefaultLogIterations>
-fixed<BT, FB> log(fixed<BT, FB> arg)
+constexpr auto log(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
     if (arg.isnan() || (arg < 0))
     {
-        return fixed<BT, FB>::GetNaN();
+        return fixed<BT, FB>::get_nan();
     }
     if (arg == 0)
     {
-        return fixed<BT, FB>::GetNegativeInfinity();
+        return fixed<BT, FB>::get_negative_infinity();
     }
     if (arg == 1)
     {
         return fixed<BT, FB>{0};
     }
-    if (arg == fixed<BT, FB>::GetInfinity())
+    if (arg == fixed<BT, FB>::get_positive_infinity())
     {
-        return fixed<BT, FB>::GetInfinity();
+        return fixed<BT, FB>::get_positive_infinity();
     }
     if (arg <= 2)
     {
@@ -132,7 +132,7 @@ fixed<BT, FB> log(fixed<BT, FB> arg)
 /// @brief Computes the sine of the given argument via Maclaurin series approximation.
 /// @see https://en.wikipedia.org/wiki/Taylor_series
 template <typename BT, unsigned int FB, int N = DefaultSinIterations>
-constexpr fixed<BT, FB> sin(fixed<BT, FB> arg)
+constexpr auto sin(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
     // Maclaurin series approximation...
     // sin x = sum((-1^n)*(x^(2n+1))/(2n+1)!)
@@ -161,7 +161,7 @@ constexpr fixed<BT, FB> sin(fixed<BT, FB> arg)
 /// @brief Computes the cosine of the given argument via Maclaurin series approximation.
 /// @see https://en.wikipedia.org/wiki/Taylor_series
 template <typename BT, unsigned int FB, int N = DefaultCosIterations>
-constexpr fixed<BT, FB> cos(fixed<BT, FB> arg)
+constexpr auto cos(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
     // Maclaurin series approximation...
     // cos x = sum((-1^n)*(x^(2n))/(2n)!)
@@ -189,7 +189,7 @@ constexpr fixed<BT, FB> cos(fixed<BT, FB> arg)
 /// @see https://en.cppreference.com/w/cpp/numeric/math/atan
 /// @see https://en.wikipedia.org/wiki/Taylor_series
 template <typename BT, unsigned int FB, int N = DefaultAtanIterations>
-constexpr fixed<BT, FB> atan(fixed<BT, FB> arg)
+constexpr auto atan(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
     // Note: if (x > 0) then arctan(x) ==  Pi/2 - arctan(1/x)
     //       if (x < 0) then arctan(x) == -Pi/2 - arctan(1/x).
@@ -222,7 +222,7 @@ constexpr fixed<BT, FB> atan(fixed<BT, FB> arg)
 /// @brief Computes the square root of a non-negative value.
 /// @see https://en.wikipedia.org/wiki/Methods_of_computing_square_roots
 template <typename BT, unsigned int FB>
-constexpr auto ComputeSqrt(fixed<BT, FB> arg)
+constexpr auto compute_sqrt(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
     auto temp = fixed<BT, FB>{1};
     auto tempSquared = temp * temp;
@@ -252,22 +252,29 @@ constexpr auto ComputeSqrt(fixed<BT, FB> arg)
 
 /// @brief Normalizes the given angular argument.
 template <typename BT, unsigned int FB>
-inline auto AngularNormalize(fixed<BT, FB> angleInRadians)
+constexpr auto angular_normalize(fixed<BT, FB> angle_in_radians) -> fixed<BT, FB>
 {
-    constexpr auto oneRotationInRadians = 2 * FixedPi<BT, FB>;
-    angleInRadians = fmod(angleInRadians, oneRotationInRadians);
-    if (angleInRadians > FixedPi<BT, FB>)
+    constexpr auto one_rotation_in_radians = fixed<BT, FB>(2) * FixedPi<BT, FB>;
+    angle_in_radians = fmod(angle_in_radians, one_rotation_in_radians);
+    if (angle_in_radians > FixedPi<BT, FB>)
     {
         // 190_deg becomes 190_deg - 360_deg = -170_deg
-        angleInRadians -= oneRotationInRadians;
+        angle_in_radians -= one_rotation_in_radians;
     }
-    else if (angleInRadians < -FixedPi<BT, FB>)
+    else if (angle_in_radians < -FixedPi<BT, FB>)
     {
         // -200_deg becomes -200_deg + 360_deg = 100_deg
-        angleInRadians += oneRotationInRadians;
+        angle_in_radians += one_rotation_in_radians;
     }
-    return angleInRadians;
+    return angle_in_radians;
 }
+
+static constexpr auto LogMaxForLowerIterations = 8;
+static constexpr auto LogIterationsForSmaller = 36;
+static constexpr auto LogIterationsForLarger = 96;
+
+static constexpr auto ExpMaxForLowerIterations = 2;
+static constexpr auto ExpIterationsForLarger = 24;
 
 } // namespace detail
 
@@ -290,7 +297,7 @@ inline auto AngularNormalize(fixed<BT, FB> angleInRadians)
 /// @brief Computes the absolute value.
 /// @see https://en.cppreference.com/w/cpp/numeric/math/fabs
 template <typename BT, unsigned int FB>
-constexpr fixed<BT, FB> abs(fixed<BT, FB> arg)
+constexpr auto abs(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
     return (arg >= 0)? arg: -arg;
 }
@@ -301,7 +308,7 @@ constexpr fixed<BT, FB> abs(fixed<BT, FB> arg)
 ///   non-integer power.
 /// @see https://en.cppreference.com/w/cpp/numeric/math/pow
 template <typename BT, unsigned int FB>
-constexpr fixed<BT, FB> pow(fixed<BT, FB> value, int n)
+constexpr auto pow(fixed<BT, FB> value, int n) -> fixed<BT, FB>
 {
     if (!n)
     {
@@ -313,27 +320,27 @@ constexpr fixed<BT, FB> pow(fixed<BT, FB> value, int n)
         {
             return fixed<BT, FB>{0};
         }
-        return fixed<BT, FB>::GetInfinity();
+        return fixed<BT, FB>::get_positive_infinity();
     }
     if (value == 1)
     {
         return fixed<BT, FB>{1};
     }
-    if (value == fixed<BT, FB>::GetNegativeInfinity())
+    if (value == fixed<BT, FB>::get_negative_infinity())
     {
         if (n > 0)
         {
             if (n % 2 == 0)
             {
-                return fixed<BT, FB>::GetInfinity();
+                return fixed<BT, FB>::get_positive_infinity();
             }
-            return fixed<BT, FB>::GetNegativeInfinity();
+            return fixed<BT, FB>::get_negative_infinity();
         }
         return fixed<BT, FB>{0};
     }
-    if (value == fixed<BT, FB>::GetInfinity())
+    if (value == fixed<BT, FB>::get_positive_infinity())
     {
-        return (n < 0)? fixed<BT, FB>{0}: fixed<BT, FB>::GetInfinity();
+        return (n < 0)? fixed<BT, FB>{0}: fixed<BT, FB>::get_positive_infinity();
     }
     const auto doReciprocal = (n < 0);
     if (doReciprocal)
@@ -345,13 +352,13 @@ constexpr fixed<BT, FB> pow(fixed<BT, FB> value, int n)
     {
         res *= value;
     }
-    return (doReciprocal)? 1 / res: res;
+    return doReciprocal? (fixed<BT, FB>(1) / res): res;
 }
 
 /// @brief Truncates the given value.
 /// @see https://en.cppreference.com/w/c/numeric/math/trunc
 template <typename BT, unsigned int FB>
-constexpr fixed<BT, FB> trunc(fixed<BT, FB> arg)
+constexpr auto trunc(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
     return static_cast<fixed<BT, FB>>(static_cast<long long>(arg));
 }
@@ -359,15 +366,15 @@ constexpr fixed<BT, FB> trunc(fixed<BT, FB> arg)
 /// @brief Next after function for fixed types.
 /// @see https://en.cppreference.com/w/cpp/numeric/math/nextafter
 template <typename BT, unsigned int FB>
-inline fixed<BT, FB> nextafter(fixed<BT, FB> from, fixed<BT, FB> to) noexcept
+constexpr auto nextafter(fixed<BT, FB> from, fixed<BT, FB> to) noexcept -> fixed<BT, FB>
 {
     if (from < to)
     {
-        return static_cast<fixed<BT, FB>>(from + fixed<BT,FB>::GetMin());
+        return static_cast<fixed<BT, FB>>(from + fixed<BT,FB>::get_min());
     }
     if (from > to)
     {
-        return static_cast<fixed<BT, FB>>(from - fixed<BT,FB>::GetMin());
+        return static_cast<fixed<BT, FB>>(from - fixed<BT,FB>::get_min());
     }
     return static_cast<fixed<BT, FB>>(to);
 }
@@ -375,7 +382,7 @@ inline fixed<BT, FB> nextafter(fixed<BT, FB> from, fixed<BT, FB> to) noexcept
 /// @brief Computes the remainder of the division of the given dividend by the given divisor.
 /// @see https://en.cppreference.com/w/cpp/numeric/math/fmod
 template <typename BT, unsigned int FB>
-inline fixed<BT, FB> fmod(fixed<BT, FB> dividend, fixed<BT, FB> divisor) noexcept
+constexpr auto fmod(fixed<BT, FB> dividend, fixed<BT, FB> divisor) noexcept -> fixed<BT, FB>
 {
     const auto quotient = dividend / divisor;
     const auto integer = trunc(quotient);
@@ -392,7 +399,7 @@ inline fixed<BT, FB> fmod(fixed<BT, FB> dividend, fixed<BT, FB> divisor) noexcep
 /// @return Mathematical square root value of the given value or the <code>NaN</code> value.
 /// @see https://en.cppreference.com/w/cpp/numeric/math/sqrt
 template <typename BT, unsigned int FB>
-inline auto sqrt(fixed<BT, FB> arg)
+constexpr auto sqrt(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
     if ((arg == fixed<BT, FB>{1}) || (arg == fixed<BT, FB>{0}))
     {
@@ -400,35 +407,35 @@ inline auto sqrt(fixed<BT, FB> arg)
     }
     if (arg > fixed<BT, FB>{0})
     {
-        return detail::ComputeSqrt(arg);
+        return detail::compute_sqrt(arg);
     }
     // else arg < 0 or NaN...
-    return fixed<BT, FB>::GetNaN();
+    return fixed<BT, FB>::get_nan();
 }
 
 /// @brief Gets whether the given value is normal - i.e. not 0 nor infinite.
 /// @see https://en.cppreference.com/w/cpp/numeric/math/isnormal
 template <typename BT, unsigned int FB>
-inline bool isnormal(fixed<BT, FB> arg)
+constexpr auto isnormal(fixed<BT, FB> arg) -> bool
 {
-    return arg != fixed<BT, FB>{0} && arg.isfinite();
+    return (arg != fixed<BT, FB>{0}) && arg.isfinite();
 }
 
 /// @brief Computes the sine of the argument for fixed types.
 /// @see https://en.cppreference.com/w/cpp/numeric/math/sin
 template <typename BT, unsigned int FB>
-inline fixed<BT, FB> sin(fixed<BT, FB> arg)
+constexpr auto sin(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
-    arg = detail::AngularNormalize(arg);
+    arg = detail::angular_normalize(arg);
     return detail::sin<BT, FB>(arg);
 }
 
 /// @brief Computes the cosine of the argument for fixed types.
 /// @see https://en.cppreference.com/w/cpp/numeric/math/cos
 template <typename BT, unsigned int FB>
-inline fixed<BT, FB> cos(fixed<BT, FB> arg)
+constexpr auto cos(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
-    arg = detail::AngularNormalize(arg);
+    arg = detail::angular_normalize(arg);
     return detail::cos<BT, FB>(arg);
 }
 
@@ -436,17 +443,17 @@ inline fixed<BT, FB> cos(fixed<BT, FB> arg)
 /// @see https://en.cppreference.com/w/cpp/numeric/math/atan
 /// @return Value between <code>-Pi / 2</code> and <code>Pi / 2</code>.
 template <typename BT, unsigned int FB>
-inline fixed<BT, FB> atan(fixed<BT, FB> arg)
+constexpr auto atan(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
     if (arg.isnan() || (arg == 0))
     {
         return arg;
     }
-    if (arg == fixed<BT, FB>::GetInfinity())
+    if (arg == fixed<BT, FB>::get_positive_infinity())
     {
         return detail::FixedPi<BT, FB> / 2;
     }
-    if (arg == fixed<BT, FB>::GetNegativeInfinity())
+    if (arg == fixed<BT, FB>::get_negative_infinity())
     {
         return -detail::FixedPi<BT, FB> / 2;
     }
@@ -457,7 +464,7 @@ inline fixed<BT, FB> atan(fixed<BT, FB> arg)
 /// @see https://en.cppreference.com/w/cpp/numeric/math/atan2
 /// @return Value between <code>-Pi</code> and <code>+Pi</code> inclusive.
 template <typename BT, unsigned int FB>
-inline fixed<BT, FB> atan2(fixed<BT, FB> y, fixed<BT, FB> x)
+constexpr auto atan2(fixed<BT, FB> y, fixed<BT, FB> x) -> fixed<BT, FB>
 {
     // See https://en.wikipedia.org/wiki/Atan2
     // See https://en.wikipedia.org/wiki/Taylor_series
@@ -477,38 +484,33 @@ inline fixed<BT, FB> atan2(fixed<BT, FB> y, fixed<BT, FB> x)
     {
         return -detail::FixedPi<BT, FB> / 2;
     }
-    return fixed<BT, FB>::GetNaN();
+    return fixed<BT, FB>::get_nan();
 }
 
 /// @brief Computes the natural logarithm of the given argument.
 /// @see https://en.cppreference.com/w/cpp/numeric/math/log
 template <typename BT, unsigned int FB>
-inline fixed<BT, FB> log(fixed<BT, FB> arg)
+constexpr auto log(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
-    static constexpr auto MaxForLowerIterations = 8;
-    static constexpr auto IterationsForSmaller = 36;
-    static constexpr auto IterationsForLarger = 96;
-    return (arg < MaxForLowerIterations)
-        ? detail::log<BT, FB, IterationsForSmaller>(arg)
-        : detail::log<BT, FB, IterationsForLarger>(arg);
+    return (arg < detail::LogMaxForLowerIterations)
+        ? detail::log<BT, FB, detail::LogIterationsForSmaller>(arg)
+        : detail::log<BT, FB, detail::LogIterationsForLarger>(arg);
 }
 
 /// @brief Computes the Euler number raised to the power of the given argument.
 /// @see https://en.cppreference.com/w/cpp/numeric/math/exp
 template <typename BT, unsigned int FB>
-inline fixed<BT, FB> exp(fixed<BT, FB> arg)
+constexpr auto exp(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
-    static constexpr auto MaxForLowerIterations = 2;
-    static constexpr auto IterationsForLarger = 24;
-    return (arg <= MaxForLowerIterations)
+    return (arg <= detail::ExpMaxForLowerIterations)
         ? detail::exp<BT, FB, detail::DefaultExpIterations>(arg)
-        : detail::exp<BT, FB, IterationsForLarger>(arg);
+        : detail::exp<BT, FB, detail::ExpIterationsForLarger>(arg);
 }
 
 /// @brief Computes the value of the base number raised to the power of the exponent.
 /// @see https://en.cppreference.com/w/cpp/numeric/math/pow
 template <typename BT, unsigned int FB>
-inline fixed<BT, FB> pow(fixed<BT, FB> base, fixed<BT, FB> exponent)
+constexpr auto pow(fixed<BT, FB> base, fixed<BT, FB> exponent) -> fixed<BT, FB>
 {
     if (exponent.isfinite())
     {
@@ -521,17 +523,15 @@ inline fixed<BT, FB> pow(fixed<BT, FB> base, fixed<BT, FB> exponent)
     }
     if (base < 0)
     {
-        return fixed<BT, FB>::GetNaN();
+        return fixed<BT, FB>::get_nan();
     }
-    const auto lnResult = log(base);
-    const auto expResult = exp(lnResult * exponent);
-    return expResult;
+    return exp(log(base) * exponent);
 }
 
 /// @brief Computes the square root of the sum of the squares.
 /// @see https://en.cppreference.com/w/cpp/numeric/math/hypot
 template <typename BT, unsigned int FB>
-inline fixed<BT, FB> hypot(fixed<BT, FB> x, fixed<BT, FB> y)
+constexpr auto hypot(fixed<BT, FB> x, fixed<BT, FB> y) -> fixed<BT, FB>
 {
     return sqrt(x * x + y * y);
 }
@@ -539,7 +539,7 @@ inline fixed<BT, FB> hypot(fixed<BT, FB> x, fixed<BT, FB> y)
 /// @brief Rounds the given value.
 /// @see https://en.cppreference.com/w/cpp/numeric/math/round
 template <typename BT, unsigned int FB>
-inline fixed<BT, FB> round(fixed<BT, FB> value) noexcept
+constexpr auto round(fixed<BT, FB> value) noexcept -> fixed<BT, FB>
 {
     const auto tmp = value + (fixed<BT, FB>{1} / fixed<BT, FB>{2});
     const auto truncated = static_cast<typename fixed<BT, FB>::value_type>(tmp);
@@ -549,7 +549,7 @@ inline fixed<BT, FB> round(fixed<BT, FB> value) noexcept
 /// @brief Determines whether the given value is negative.
 /// @see https://en.cppreference.com/w/cpp/numeric/math/signbit
 template <typename BT, unsigned int FB>
-inline bool signbit(fixed<BT, FB> value) noexcept
+constexpr auto signbit(fixed<BT, FB> value) noexcept -> bool
 {
     return value.getsign() < 0;
 }
@@ -557,33 +557,33 @@ inline bool signbit(fixed<BT, FB> value) noexcept
 /// @brief Gets whether the given value is not-a-number.
 /// @see https://en.cppreference.com/w/cpp/numeric/math/isnan
 template <typename BT, unsigned int FB>
-constexpr bool isnan(fixed<BT, FB> value) noexcept
+constexpr auto isnan(fixed<BT, FB> value) noexcept -> bool
 {
-    return value.Compare(0) == fixed<BT, FB>::ordering::unordered;
+    return value.compare(0) == ordering::unordered;
 }
 
 /// @brief Gets whether the given value is finite.
 /// @see https://en.cppreference.com/w/cpp/numeric/math/isfinite
 template <typename BT, unsigned int FB>
-inline bool isfinite(fixed<BT, FB> value) noexcept
+constexpr auto isfinite(fixed<BT, FB> value) noexcept -> bool
 {
-    return (value > fixed<BT, FB>::GetNegativeInfinity())
-    && (value < fixed<BT, FB>::GetInfinity());
+    return (value > fixed<BT, FB>::get_negative_infinity()) // newline!
+        && (value < fixed<BT, FB>::get_positive_infinity());
 }
 
 /// @brief Gets wether the given value is a positive or negative infinity.
 /// @see https://en.cppreference.com/w/cpp/numeric/math/isinf
 template <typename BT, unsigned int FB>
-auto isinf(const fixed<BT, FB>& value) noexcept
+constexpr auto isinf(const fixed<BT, FB>& value) noexcept -> bool
 {
-    return (value == fixed<BT, FB>::GetInfinity()) // force newline
-        || (value == fixed<BT, FB>::GetNegativeInfinity());
+    return (value == fixed<BT, FB>::get_positive_infinity()) // newline!
+        || (value == fixed<BT, FB>::get_negative_infinity());
 }
 
 /// @brief Gets the largest integer value not greater than the given value.
 /// @see https://en.cppreference.com/w/cpp/numeric/math/floor.
 template <typename BT, unsigned int FB>
-auto floor(const fixed<BT, FB>& value)
+constexpr auto floor(const fixed<BT, FB>& value) -> fixed<BT, FB>
 {
     const auto tmp = trunc(value);
     return (tmp > value)? (value - 1): tmp;

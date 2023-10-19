@@ -22,7 +22,9 @@ add_executable(unittest ${Test_SRCS})
 # Link a target to given libraries.
 # See details at: https://cmake.org/cmake/help/v3.1/command/target_link_libraries.html
 #target_link_libraries(unittest realnumb::realnumb GTest::gtest GTest::gtest_main)
-target_link_libraries(unittest realnumb::realnumb GTest::gtest_main)
+#target_link_libraries(unittest realnumb::realnumb GTest::gtest_main)
+target_link_libraries(unittest PUBLIC realnumb::realnumb)
+target_link_libraries(unittest PUBLIC GTest::gtest_main)
 
 include(GoogleTest)
 gtest_discover_tests(unittest)
