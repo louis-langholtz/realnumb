@@ -36,4 +36,9 @@ target_include_directories(realnumb INTERFACE
 if(REALNUMB_INSTALL)
 	include(GNUInstallDirs)
 	include(CMakePackageConfigHelpers)
+
+	# install headers
+	install(FILES ${libinc}
+		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/realnumb
+		COMPONENT Library)
 endif()
