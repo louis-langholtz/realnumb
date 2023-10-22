@@ -22,7 +22,7 @@ endforeach()
 
 # Set name for entire project. This establishes the project name in <PROJECT_NAME>_* variables.
 # Details at: https://cmake.org/cmake/help/latest/command/project.html#command:project
-project(realnum
+project(realnumb
         VERSION 0.0.1
 	DESCRIPTION "Real numbers library."
         HOMEPAGE_URL "https://louis-langholtz.github.io/realnumb/"
