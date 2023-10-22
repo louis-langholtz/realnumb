@@ -8,7 +8,7 @@
 using namespace realnumb;
 
 template <typename T>
-class fixed_test: public testing::Test {
+class fixed_: public testing::Test {
 public:
     using type = T;
 };
@@ -19,9 +19,9 @@ using fixed_types = ::testing::Types<
     , ::realnumb::fixed64
 #endif
 >;
-TYPED_TEST_SUITE(fixed_test, fixed_types);
+TYPED_TEST_SUITE(fixed_, fixed_types);
 
-TYPED_TEST(fixed_test, to_value_from_unsigned)
+TYPED_TEST(fixed_, to_value_from_unsigned)
 {
     using type = typename TestFixture::type;
     EXPECT_EQ(type::to_value(0u),  0 * type::scale_factor);
@@ -29,7 +29,7 @@ TYPED_TEST(fixed_test, to_value_from_unsigned)
     EXPECT_EQ(type::to_value(2u),  2 * type::scale_factor);
 }
 
-TYPED_TEST(fixed_test, to_value_from_signed)
+TYPED_TEST(fixed_, to_value_from_signed)
 {
     using type = typename TestFixture::type;
     EXPECT_EQ(type::to_value( 0),  0 * type::scale_factor);
@@ -39,7 +39,7 @@ TYPED_TEST(fixed_test, to_value_from_signed)
     EXPECT_EQ(type::to_value(-2), -2 * type::scale_factor);
 }
 
-TYPED_TEST(fixed_test, to_value_from_floating)
+TYPED_TEST(fixed_, to_value_from_floating)
 {
     using type = typename TestFixture::type;
     EXPECT_EQ(type::to_value( 0.0),  0 * type::scale_factor);
@@ -58,7 +58,7 @@ TYPED_TEST(fixed_test, to_value_from_floating)
     EXPECT_EQ(type::to_value(-std::numeric_limits<float>::infinity()), -fixed_infinity_as_vt);
 }
 
-TYPED_TEST(fixed_test, int_construction_and_compare)
+TYPED_TEST(fixed_, int_construction_and_compare)
 {
     using type = typename TestFixture::type;
     EXPECT_EQ(type( 0), type( 0));
@@ -69,7 +69,7 @@ TYPED_TEST(fixed_test, int_construction_and_compare)
     EXPECT_GT(type(-10), type(-11));
 }
 
-TYPED_TEST(fixed_test, IntCast)
+TYPED_TEST(fixed_, IntCast)
 {
     using type = typename TestFixture::type;
     EXPECT_EQ(static_cast<int>(type( 0)),  0);
@@ -79,7 +79,7 @@ TYPED_TEST(fixed_test, IntCast)
     EXPECT_EQ(static_cast<int>(type(+2)), +2);
 }
 
-TYPED_TEST(fixed_test, FloatCast)
+TYPED_TEST(fixed_, FloatCast)
 {
     using type = typename TestFixture::type;
     EXPECT_EQ(static_cast<float>(type( 0)),  0.0f);
@@ -87,7 +87,7 @@ TYPED_TEST(fixed_test, FloatCast)
     EXPECT_EQ(static_cast<float>(type(+1)), +1.0f);
 }
 
-TYPED_TEST(fixed_test, DoubleCast)
+TYPED_TEST(fixed_, DoubleCast)
 {
     using type = typename TestFixture::type;
     EXPECT_EQ(static_cast<double>(type( 0)),  0.0);
@@ -95,7 +95,7 @@ TYPED_TEST(fixed_test, DoubleCast)
     EXPECT_EQ(static_cast<double>(type(+1)), +1.0);
 }
 
-TYPED_TEST(fixed_test, FloatConstruction)
+TYPED_TEST(fixed_, FloatConstruction)
 {
     using type = typename TestFixture::type;
     EXPECT_EQ(type(0.0), 0.0);
@@ -129,119 +129,135 @@ TEST(fixed, get_max)
 #endif
 }
 
-TEST(fixed32, limits)
+TEST(fixed, get_lowest)
 {
-    EXPECT_NEAR(static_cast<double>(std::numeric_limits<fixed32>::max()), 4194303.99609375,
-                0.0);
-    EXPECT_NEAR(static_cast<double>(std::numeric_limits<fixed32>::lowest()), -4194303.99609375,
-                0.0);
-    EXPECT_NEAR(static_cast<double>(std::numeric_limits<fixed32>::min()), 0.001953125,
-                0.0);
+    EXPECT_EQ(static_cast<double>(fixed32::get_lowest()), -4194303.99609375);
+#ifdef REALNUMB_INT128
+    EXPECT_EQ(static_cast<double>(fixed64::get_lowest()), -549755813888);
+#endif
 }
 
-TEST(fixed32, Equals)
+TYPED_TEST(fixed_, limits)
 {
-    EXPECT_TRUE(fixed32(12) == fixed32(12.0f));
-    EXPECT_FALSE(std::numeric_limits<fixed32>::quiet_NaN() == std::numeric_limits<fixed32>::quiet_NaN());
+    using type = typename TestFixture::type;
+    EXPECT_EQ(std::numeric_limits<type>::max(), type::get_max());
+    EXPECT_EQ(std::numeric_limits<type>::min(), type::get_min());
+    EXPECT_EQ(std::numeric_limits<type>::lowest(), type::get_lowest());
 }
 
-TEST(fixed32, NotEquals)
+TYPED_TEST(fixed_, Equals)
 {
-    EXPECT_TRUE(fixed32(-302) != fixed32(12.0f));
-    EXPECT_FALSE(fixed32(-302) != fixed32(-302));
-    EXPECT_TRUE(std::numeric_limits<fixed32>::quiet_NaN() != std::numeric_limits<fixed32>::quiet_NaN());
+    using type = typename TestFixture::type;
+    EXPECT_TRUE(type(12) == type(12.0f));
+    EXPECT_FALSE(std::numeric_limits<type>::quiet_NaN() == std::numeric_limits<type>::quiet_NaN());
 }
 
-TEST(fixed32, less)
+TYPED_TEST(fixed_, NotEquals)
 {
-    EXPECT_TRUE(fixed32(-302) < fixed32(12.0f));
-    EXPECT_TRUE(fixed32(40) < fixed32(44));
-    EXPECT_FALSE(fixed32(76) < fixed32(31));
-    EXPECT_TRUE(fixed32(0.001) < fixed32(0.002));
-    EXPECT_TRUE(fixed32(0.000) < fixed32(0.01));
+    using type = typename TestFixture::type;
+    EXPECT_TRUE(type(-302) != type(12.0f));
+    EXPECT_FALSE(type(-302) != type(-302));
+    EXPECT_TRUE(std::numeric_limits<type>::quiet_NaN() != std::numeric_limits<type>::quiet_NaN());
 }
 
-TEST(fixed32, greater)
+TYPED_TEST(fixed_, less)
 {
-    EXPECT_FALSE(fixed32(-302) > fixed32(12.0f));
-    EXPECT_FALSE(fixed32(40) > fixed32(44));
-    EXPECT_TRUE(fixed32(76) > fixed32(31));
+    using type = typename TestFixture::type;
+    EXPECT_TRUE(type(-302) < type(12.0f));
+    EXPECT_TRUE(type(40) < type(44));
+    EXPECT_FALSE(type(76) < type(31));
+    EXPECT_TRUE(type(0.001) < type(0.002));
+    EXPECT_TRUE(type(0.000) < type(0.01));
 }
 
-TEST(fixed32, Addition)
+TYPED_TEST(fixed_, greater)
 {
+    using type = typename TestFixture::type;
+    EXPECT_FALSE(type(-302) > type(12.0f));
+    EXPECT_FALSE(type(40) > type(44));
+    EXPECT_TRUE(type(76) > type(31));
+}
+
+TYPED_TEST(fixed_, Addition)
+{
+    using type = typename TestFixture::type;
     for (auto val = 0; val < 100; ++val)
     {
-        fixed32 a{val};
-        fixed32 b{val};
-        EXPECT_EQ(a + b, fixed32(val * 2));
+        type a{val};
+        type b{val};
+        EXPECT_EQ(a + b, type(val * 2));
     }
 }
 
-TEST(fixed32, InfinityPlusValidIsInfinity)
+TYPED_TEST(fixed_, InfinityPlusValidIsInfinity)
 {
-    EXPECT_EQ(fixed32::get_positive_infinity() + 0, fixed32::get_positive_infinity());
-    EXPECT_EQ(fixed32::get_positive_infinity() + 1, fixed32::get_positive_infinity());
-    EXPECT_EQ(fixed32::get_positive_infinity() + 100, fixed32::get_positive_infinity());
-    EXPECT_EQ(fixed32::get_positive_infinity() + -1, fixed32::get_positive_infinity());
-    EXPECT_EQ(fixed32::get_positive_infinity() + -100, fixed32::get_positive_infinity());
-    EXPECT_EQ(fixed32::get_positive_infinity() + fixed32::get_positive_infinity(), fixed32::get_positive_infinity());
+    using type = typename TestFixture::type;
+    EXPECT_EQ(type::get_positive_infinity() + 0, type::get_positive_infinity());
+    EXPECT_EQ(type::get_positive_infinity() + 1, type::get_positive_infinity());
+    EXPECT_EQ(type::get_positive_infinity() + 100, type::get_positive_infinity());
+    EXPECT_EQ(type::get_positive_infinity() + -1, type::get_positive_infinity());
+    EXPECT_EQ(type::get_positive_infinity() + -100, type::get_positive_infinity());
+    EXPECT_EQ(type::get_positive_infinity() + type::get_positive_infinity(), type::get_positive_infinity());
 }
 
-TEST(fixed32, EqualSubtraction)
+TYPED_TEST(fixed_, EqualSubtraction)
 {
+    using type = typename TestFixture::type;
     for (auto val = 0; val < 100; ++val)
     {
-        fixed32 a{val};
-        fixed32 b{val};
-        EXPECT_EQ(a - b, fixed32(0));
+        type a{val};
+        type b{val};
+        EXPECT_EQ(a - b, type(0));
     }
 }
 
-TEST(fixed32, OppositeSubtraction)
+TYPED_TEST(fixed_, OppositeSubtraction)
 {
+    using type = typename TestFixture::type;
     for (auto val = 0; val < 100; ++val)
     {
-        fixed32 a{-val};
-        fixed32 b{val};
-        EXPECT_EQ(a - b, fixed32(val * -2));
+        type a{-val};
+        type b{val};
+        EXPECT_EQ(a - b, type(val * -2));
     }
 }
 
-TEST(fixed32, Multiplication)
+TYPED_TEST(fixed_, Multiplication)
 {
+    using type = typename TestFixture::type;
     for (auto val = 0; val < 100; ++val)
     {
-        fixed32 a{val};
-        EXPECT_EQ(a * a, fixed32(val * val));
+        type a{val};
+        EXPECT_EQ(a * a, type(val * val));
     }
-    EXPECT_EQ(fixed32(9) * fixed32(3), fixed32(27));
-    EXPECT_EQ(fixed32(-5) * fixed32(-4), fixed32(20));
-    EXPECT_EQ(fixed32(0.5) * fixed32(0.5), fixed32(0.25));
-    EXPECT_EQ(fixed32(-0.05) * fixed32(0.05), fixed32(-0.0025));
-    EXPECT_EQ(fixed32(181) * fixed32(181), fixed32(32761));
+    EXPECT_EQ(type(9) * type(3), type(27));
+    EXPECT_EQ(type(-5) * type(-4), type(20));
+    EXPECT_EQ(type(181) * type(181), type(32761));
+    EXPECT_EQ(type(0.5) * type(0.5), type(0.25));
+    EXPECT_NEAR(double(type(-0.05) * type(0.05)), double(type(-0.0025)), 0.0001);
 }
 
-TEST(fixed32, Division)
+TYPED_TEST(fixed_, Division)
 {
+    using type = typename TestFixture::type;
     for (auto val = 1; val < 100; ++val)
     {
-        fixed32 a{val};
-        EXPECT_EQ(a / a, fixed32(1));
+        type a{val};
+        EXPECT_EQ(a / a, type(1));
     }
-    EXPECT_EQ(fixed32(9) / fixed32(3), fixed32(3));
-    EXPECT_EQ(fixed32(81) / fixed32(9), fixed32(9));
-    EXPECT_EQ(fixed32(-10) / fixed32(2), fixed32(-5));
-    EXPECT_EQ(fixed32(1) / fixed32(2), fixed32(0.5));
-    EXPECT_EQ(fixed32(7) / fixed32(3), fixed32(7.0/3.0));
+    EXPECT_EQ(type(9) / type(3), type(3));
+    EXPECT_EQ(type(81) / type(9), type(9));
+    EXPECT_EQ(type(-10) / type(2), type(-5));
+    EXPECT_EQ(type(1) / type(2), type(0.5));
+    EXPECT_EQ(type(7) / type(3), type(7.0/3.0));
 
     // Confirm int divided by fixed32 gets promoted to fixed32 divided by fixed32
-    EXPECT_EQ(1 / fixed32(2), fixed32(0.5));
-    EXPECT_EQ(2 / fixed32(2), fixed32(1));
-    EXPECT_EQ(3 / fixed32(2), fixed32(1.5));
+    EXPECT_EQ(1 / type(2), type(0.5));
+    EXPECT_EQ(2 / type(2), type(1));
+    EXPECT_EQ(3 / type(2), type(1.5));
 }
 
-TEST(fixed32, Max)
+TEST(fixed, Max_fixed32)
 {
     const auto max_internal_val = std::numeric_limits<int32_t>::max() - 1;
     const auto max_fixed32 = *reinterpret_cast<const fixed32*>(&max_internal_val);
@@ -266,7 +282,7 @@ TEST(fixed32, Max)
     EXPECT_GT(fixed32::get_max(), fixed32((1 << (31u - fixed32::fraction_bits)) - 1));
 }
 
-TEST(fixed32, Min)
+TEST(fixed, Min_fixed32)
 {
     EXPECT_EQ(fixed32::get_min(), fixed32::get_min());
     EXPECT_EQ(fixed32::get_min(), fixed32(0, 1));
@@ -284,7 +300,7 @@ TEST(fixed32, Min)
     EXPECT_GT(fixed32::get_min(), fixed32::get_lowest());
 }
 
-TEST(fixed32, Lowest)
+TEST(fixed, Lowest_fixed32)
 {
     const auto lowest_internal_val = std::numeric_limits<int32_t>::min() + 2;
     const auto lowest_fixed32 = *reinterpret_cast<const fixed32*>(&lowest_internal_val);
@@ -308,33 +324,33 @@ TEST(fixed32, Lowest)
     EXPECT_EQ(fixed32::get_lowest(), -fixed32::get_max());
 }
 
-TYPED_TEST(fixed_test, SubtractingFromLowestGetsNegativeInfinity)
+TYPED_TEST(fixed_, SubtractingFromLowestGetsNegativeInfinity)
 {
     using type = typename TestFixture::type;
     EXPECT_EQ(type::get_lowest() - type::get_min(), type::get_negative_infinity());
     EXPECT_EQ(type::get_lowest() - 1, type::get_negative_infinity());
 }
 
-TYPED_TEST(fixed_test, AddingToMaxGetsInfinity)
+TYPED_TEST(fixed_, AddingToMaxGetsInfinity)
 {
     using type = typename TestFixture::type;
     EXPECT_EQ(type::get_max() + type::get_min(), type::get_positive_infinity());
     EXPECT_EQ(type::get_max() + 1, type::get_positive_infinity());
 }
 
-TYPED_TEST(fixed_test, MinusInfinityEqualsNegativeInfinity)
+TYPED_TEST(fixed_, MinusInfinityEqualsNegativeInfinity)
 {
     using type = typename TestFixture::type;
     EXPECT_EQ(-type::get_positive_infinity(), type::get_negative_infinity());
 }
 
-TYPED_TEST(fixed_test, InfinityEqualsMinusNegativeInfinity)
+TYPED_TEST(fixed_, InfinityEqualsMinusNegativeInfinity)
 {
     using type = typename TestFixture::type;
     EXPECT_EQ(type::get_positive_infinity(), -type::get_negative_infinity());
 }
 
-TYPED_TEST(fixed_test, InifnityTimesPositiveIsInfinity)
+TYPED_TEST(fixed_, InifnityTimesPositiveIsInfinity)
 {
     using type = typename TestFixture::type;
     EXPECT_EQ(type::get_positive_infinity() * 1, type::get_positive_infinity());
@@ -342,7 +358,7 @@ TYPED_TEST(fixed_test, InifnityTimesPositiveIsInfinity)
     EXPECT_EQ(type::get_positive_infinity() * 0.5, type::get_positive_infinity());
 }
 
-TYPED_TEST(fixed_test, InifnityDividedByPositiveIsInfinity)
+TYPED_TEST(fixed_, InifnityDividedByPositiveIsInfinity)
 {
     using type = typename TestFixture::type;
     EXPECT_EQ(type::get_positive_infinity() / 1, type::get_positive_infinity());
@@ -350,7 +366,7 @@ TYPED_TEST(fixed_test, InifnityDividedByPositiveIsInfinity)
     EXPECT_EQ(type::get_positive_infinity() / 0.5, type::get_positive_infinity());
 }
 
-TYPED_TEST(fixed_test, InifnityTimesNegativeIsNegativeInfinity)
+TYPED_TEST(fixed_, InifnityTimesNegativeIsNegativeInfinity)
 {
     using type = typename TestFixture::type;
     EXPECT_EQ(type::get_positive_infinity() * -1, -type::get_positive_infinity());
@@ -358,7 +374,7 @@ TYPED_TEST(fixed_test, InifnityTimesNegativeIsNegativeInfinity)
     EXPECT_EQ(type::get_positive_infinity() * -0.5, -type::get_positive_infinity());
 }
 
-TYPED_TEST(fixed_test, InifnityDividedByNegativeIsNegativeInfinity)
+TYPED_TEST(fixed_, InifnityDividedByNegativeIsNegativeInfinity)
 {
     using type = typename TestFixture::type;
     EXPECT_EQ(type::get_positive_infinity() / -1, -type::get_positive_infinity());
@@ -366,19 +382,19 @@ TYPED_TEST(fixed_test, InifnityDividedByNegativeIsNegativeInfinity)
     EXPECT_EQ(type::get_positive_infinity() / -0.5, -type::get_positive_infinity());
 }
 
-TYPED_TEST(fixed_test, InfinityMinusNegativeInfinityIsInfinity)
+TYPED_TEST(fixed_, InfinityMinusNegativeInfinityIsInfinity)
 {
     using type = typename TestFixture::type;
     EXPECT_EQ(type::get_positive_infinity() - -type::get_positive_infinity(), type::get_positive_infinity());
 }
 
-TYPED_TEST(fixed_test, NegativeInfinityMinusInfinityIsNegativeInfinity)
+TYPED_TEST(fixed_, NegativeInfinityMinusInfinityIsNegativeInfinity)
 {
     using type = typename TestFixture::type;
     EXPECT_EQ(-type::get_positive_infinity() - type::get_positive_infinity(), -type::get_positive_infinity());
 }
 
-TYPED_TEST(fixed_test, Comparators)
+TYPED_TEST(fixed_, Comparators)
 {
     using type = typename TestFixture::type;
     EXPECT_FALSE(type::get_nan() > 0.0f);
@@ -388,7 +404,7 @@ TYPED_TEST(fixed_test, Comparators)
     EXPECT_FALSE(type::get_nan() == type::get_nan());
 }
 
-TYPED_TEST(fixed_test, AdditionAssignment)
+TYPED_TEST(fixed_, AdditionAssignment)
 {
     using type = typename TestFixture::type;
     type foo;
@@ -400,7 +416,7 @@ TYPED_TEST(fixed_test, AdditionAssignment)
     EXPECT_EQ(foo, type::get_negative_infinity());
 }
 
-TYPED_TEST(fixed_test, SubtractionAssignment)
+TYPED_TEST(fixed_, SubtractionAssignment)
 {
     using type = typename TestFixture::type;
     type foo;
@@ -415,7 +431,7 @@ TYPED_TEST(fixed_test, SubtractionAssignment)
     EXPECT_EQ(foo, type::get_positive_infinity());
 }
 
-TYPED_TEST(fixed_test, MultiplicationAssignment)
+TYPED_TEST(fixed_, MultiplicationAssignment)
 {
     using type = typename TestFixture::type;
     type foo;
@@ -433,7 +449,7 @@ TYPED_TEST(fixed_test, MultiplicationAssignment)
     EXPECT_EQ(foo, type::get_negative_infinity());
 }
 
-TYPED_TEST(fixed_test, DivisionAssignment)
+TYPED_TEST(fixed_, DivisionAssignment)
 {
     using type = typename TestFixture::type;
     type foo;
@@ -456,7 +472,7 @@ TYPED_TEST(fixed_test, DivisionAssignment)
     EXPECT_EQ(foo, type::get_negative_infinity());
 }
 
-TYPED_TEST(fixed_test, GetSign)
+TYPED_TEST(fixed_, GetSign)
 {
     using type = typename TestFixture::type;
     type foo;

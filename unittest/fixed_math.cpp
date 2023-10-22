@@ -4,8 +4,10 @@
 
 using namespace realnumb;
 
+constexpr auto pi = double{3.14159265358979323846264338327950288};
+
 template <typename T>
-class fixed_math_test: public testing::Test {
+class fixed_math_: public testing::Test {
 public:
     using type = T;
 };
@@ -16,9 +18,9 @@ using fixed_types = ::testing::Types<
     , ::realnumb::fixed64
 #endif
 >;
-TYPED_TEST_SUITE(fixed_math_test, fixed_types);
+TYPED_TEST_SUITE(fixed_math_, fixed_types);
 
-TYPED_TEST(fixed_math_test, isfinite)
+TYPED_TEST(fixed_math_, isfinite)
 {
     using type = typename TestFixture::type;
     EXPECT_TRUE(isfinite(type(0)));
@@ -27,7 +29,7 @@ TYPED_TEST(fixed_math_test, isfinite)
     EXPECT_FALSE(isfinite(type::get_nan()));
 }
 
-TYPED_TEST(fixed_math_test, isnan)
+TYPED_TEST(fixed_math_, isnan)
 {
     using type = typename TestFixture::type;
 
@@ -56,14 +58,22 @@ TYPED_TEST(fixed_math_test, isnan)
     EXPECT_TRUE(isnan(-type::get_positive_infinity() + type::get_positive_infinity()));
 }
 
+TYPED_TEST(fixed_math_, log_zero_notfinite)
+{
+    using type = typename TestFixture::type;
+    ASSERT_FALSE(isfinite(static_cast<double>(log(0.0))));
+    EXPECT_FALSE(isfinite(static_cast<double>(log(type(0)))));
+}
+
+TYPED_TEST(fixed_math_, log_minus_one_isnan)
+{
+    using type = typename TestFixture::type;
+    ASSERT_TRUE(isnan(static_cast<double>(log(-1.0))));
+    EXPECT_TRUE(isnan(static_cast<double>(log(type(-1)))));
+}
+
 TEST(fixed_math, log_fixed32)
 {
-    ASSERT_FALSE(isfinite(static_cast<double>(log(0.0))));
-    EXPECT_FALSE(isfinite(static_cast<double>(log(fixed32(0)))));
-
-    ASSERT_TRUE(isnan(static_cast<double>(log(-1.0))));
-    EXPECT_TRUE(isnan(static_cast<double>(log(fixed32(-1)))));
-
     ASSERT_NEAR(static_cast<double>(log(0.1)), -2.3025850929940455, 0.01);
     EXPECT_NEAR(static_cast<double>(log(fixed32(0.1))), -2.3025850929940455, 0.051);
 
@@ -95,7 +105,8 @@ TEST(fixed_math, log_fixed32)
     ASSERT_NEAR(static_cast<double>(log(491.721)), 6.1979114824747752, 0.01);
     EXPECT_NEAR(static_cast<double>(log(fixed32(491.721))), log(491.721), 1.517);
 
-    EXPECT_EQ(static_cast<double>(log(fixed32::get_positive_infinity())), log(std::numeric_limits<double>::infinity()));
+    EXPECT_EQ(static_cast<double>(log(fixed32::get_positive_infinity())),
+              log(std::numeric_limits<double>::infinity()));
 }
 
 TEST(fixed_math, exp_fixed32)
@@ -260,7 +271,7 @@ TEST(fixed_math, sqrt_fixed32)
     }
 }
 
-TYPED_TEST(fixed_math_test, hypot)
+TYPED_TEST(fixed_math_, hypot)
 {
     using type = typename TestFixture::type;
     constexpr auto tolerance = (sizeof(type) > 4u)? 0.001: 0.01;
@@ -276,7 +287,6 @@ TYPED_TEST(fixed_math_test, hypot)
 
 TEST(fixed_math, sin_fixed32)
 {
-    constexpr auto pi = double{3.14159265358979323846264338327950288};
     EXPECT_NEAR(static_cast<double>(sin(fixed32(0))), 0.0, 0.005);
     EXPECT_NEAR(static_cast<double>(sin(fixed32(+pi/4))), std::sin(+pi/4), 0.015);
     EXPECT_NEAR(static_cast<double>(sin(fixed32(-pi/4))), std::sin(-pi/4), 0.015);
@@ -305,7 +315,6 @@ TEST(fixed_math, sin_fixed32)
 #ifdef REALNUMB_INT128
 TEST(fixed_math, sin_fixed64)
 {
-    constexpr auto pi = double{3.14159265358979323846264338327950288};
     EXPECT_NEAR(static_cast<double>(sin(fixed64(0))), 0.0, 0.002);
     EXPECT_NEAR(static_cast<double>(sin(fixed64(+pi/4))), std::sin(+pi/4), 0.002);
     EXPECT_NEAR(static_cast<double>(sin(fixed64(-pi/4))), std::sin(-pi/4), 0.002);
@@ -334,7 +343,6 @@ TEST(fixed_math, sin_fixed64)
 
 TEST(fixed_math, cos_fixed32)
 {
-    constexpr auto pi = double{3.14159265358979323846264338327950288};
     EXPECT_NEAR(static_cast<double>(cos(fixed32(0))), 1.0, 0.01);
     EXPECT_NEAR(static_cast<double>(cos(fixed32(+1))), std::cos(+1.0), 0.015);
     EXPECT_NEAR(static_cast<double>(cos(fixed32(-1))), std::cos(-1.0), 0.015);
@@ -353,7 +361,6 @@ TEST(fixed_math, cos_fixed32)
 #ifdef REALNUMB_INT128
 TEST(fixed_math, cos_fixed64)
 {
-    constexpr auto pi = double{3.14159265358979323846264338327950288};
     EXPECT_NEAR(static_cast<double>(cos(fixed64(0))), 1.0, 0.01);
     EXPECT_NEAR(static_cast<double>(cos(fixed64(+1))), std::cos(+1.0), 0.002);
     EXPECT_NEAR(static_cast<double>(cos(fixed64(-1))), std::cos(-1.0), 0.002);
@@ -370,7 +377,7 @@ TEST(fixed_math, cos_fixed64)
 }
 #endif
 
-TYPED_TEST(fixed_math_test, atan)
+TYPED_TEST(fixed_math_, atan)
 {
     using type = typename TestFixture::type;
     EXPECT_NEAR(static_cast<double>(atan(type::get_positive_infinity())),
@@ -394,7 +401,6 @@ TEST(fixed_math, atan2_specials_fixed32)
 
 TEST(fixed_math, atan2_angles_fixed32)
 {
-    constexpr auto pi = double{3.14159265358979323846264338327950288};
     for (auto angleInDegs = -90; angleInDegs < +90; ++angleInDegs)
     {
         const auto angle = angleInDegs * pi / 180;
@@ -404,13 +410,13 @@ TEST(fixed_math, atan2_angles_fixed32)
     }
 }
 
-TYPED_TEST(fixed_math_test, InfinityDividedByInfinityIsNaN)
+TYPED_TEST(fixed_math_, InfinityDividedByInfinityIsNaN)
 {
     using type = typename TestFixture::type;
     EXPECT_TRUE(isnan(type::get_positive_infinity() / type::get_positive_infinity()));
 }
 
-TYPED_TEST(fixed_math_test, InfinityTimesZeroIsNaN)
+TYPED_TEST(fixed_math_, InfinityTimesZeroIsNaN)
 {
     using type = typename TestFixture::type;
    EXPECT_TRUE(isnan(type::get_positive_infinity() * 0));
