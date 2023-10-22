@@ -12,6 +12,7 @@
 		991988A82AE0840B0076F969 /* fixed_math.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 991988A32AE0840B0076F969 /* fixed_math.hpp */; };
 		991988BB2AE0D5DE0076F969 /* fixed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 991988BA2AE0D5DE0076F969 /* fixed.cpp */; };
 		991988C42AE3FFEB0076F969 /* fixed_math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 991988C32AE3FFEB0076F969 /* fixed_math.cpp */; };
+		991988C62AE4D8390076F969 /* fixed_limits.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 991988C52AE4D8390076F969 /* fixed_limits.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -36,6 +37,7 @@
 		991988B72AE089100076F969 /* CMakeLists.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
 		991988BA2AE0D5DE0076F969 /* fixed.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fixed.cpp; sourceTree = "<group>"; };
 		991988C32AE3FFEB0076F969 /* fixed_math.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = fixed_math.cpp; sourceTree = "<group>"; };
+		991988C52AE4D8390076F969 /* fixed_limits.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fixed_limits.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,6 +126,7 @@
 			children = (
 				991988B72AE089100076F969 /* CMakeLists.txt */,
 				991988BA2AE0D5DE0076F969 /* fixed.cpp */,
+				991988C52AE4D8390076F969 /* fixed_limits.cpp */,
 				991988C32AE3FFEB0076F969 /* fixed_math.cpp */,
 			);
 			name = unittest;
@@ -235,6 +238,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				991988C62AE4D8390076F969 /* fixed_limits.cpp in Sources */,
 				991988C42AE3FFEB0076F969 /* fixed_math.cpp in Sources */,
 				991988BB2AE0D5DE0076F969 /* fixed.cpp in Sources */,
 			);

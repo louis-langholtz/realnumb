@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
-#include <realnumb/fixed.hpp>
-#include <realnumb/fixed_limits.hpp>
-
 #include <iostream>
+#include <limits> // for std::numeric_limits
+
+#include <realnumb/fixed.hpp>
 
 using namespace realnumb;
 
@@ -137,19 +137,10 @@ TEST(fixed, get_lowest)
 #endif
 }
 
-TYPED_TEST(fixed_, limits)
-{
-    using type = typename TestFixture::type;
-    EXPECT_EQ(std::numeric_limits<type>::max(), type::get_max());
-    EXPECT_EQ(std::numeric_limits<type>::min(), type::get_min());
-    EXPECT_EQ(std::numeric_limits<type>::lowest(), type::get_lowest());
-}
-
 TYPED_TEST(fixed_, Equals)
 {
     using type = typename TestFixture::type;
     EXPECT_TRUE(type(12) == type(12.0f));
-    EXPECT_FALSE(std::numeric_limits<type>::quiet_NaN() == std::numeric_limits<type>::quiet_NaN());
 }
 
 TYPED_TEST(fixed_, NotEquals)
@@ -157,7 +148,6 @@ TYPED_TEST(fixed_, NotEquals)
     using type = typename TestFixture::type;
     EXPECT_TRUE(type(-302) != type(12.0f));
     EXPECT_FALSE(type(-302) != type(-302));
-    EXPECT_TRUE(std::numeric_limits<type>::quiet_NaN() != std::numeric_limits<type>::quiet_NaN());
 }
 
 TYPED_TEST(fixed_, less)
@@ -410,8 +400,8 @@ TYPED_TEST(fixed_, AdditionAssignment)
     type foo;
     foo = 0;
     foo += type::get_negative_infinity();
-    EXPECT_EQ(foo, -std::numeric_limits<type>::infinity());
-    foo = std::numeric_limits<type>::lowest();
+    EXPECT_EQ(foo, type::get_negative_infinity());
+    foo = type::get_lowest();
     foo += -1;
     EXPECT_EQ(foo, type::get_negative_infinity());
 }
@@ -426,7 +416,7 @@ TYPED_TEST(fixed_, SubtractionAssignment)
     foo = 0;
     foo -= 1;
     EXPECT_EQ(foo, type{-1});
-    foo = std::numeric_limits<type>::max();
+    foo = type::get_max();
     foo -= type{-2};
     EXPECT_EQ(foo, type::get_positive_infinity());
 }
@@ -441,10 +431,10 @@ TYPED_TEST(fixed_, MultiplicationAssignment)
     foo = 0;
     foo *= type::get_nan();
     EXPECT_TRUE(foo.isnan());
-    foo = std::numeric_limits<type>::min();
-    foo *= std::numeric_limits<type>::min();
+    foo = type::get_min();
+    foo *= type::get_min();
     EXPECT_EQ(foo, type(0));
-    foo = std::numeric_limits<type>::lowest();
+    foo = type::get_lowest();
     foo *= 2;
     EXPECT_EQ(foo, type::get_negative_infinity());
 }
@@ -462,11 +452,11 @@ TYPED_TEST(fixed_, DivisionAssignment)
     foo = 1;
     foo /= type::get_positive_infinity();
     EXPECT_EQ(foo, type(0));
-    foo = std::numeric_limits<type>::max();
-    ASSERT_EQ(foo, std::numeric_limits<type>::max());
+    foo = type::get_max();
+    ASSERT_EQ(foo, type::get_max());
     foo /= type(0.5f);
     EXPECT_EQ(foo, type::get_positive_infinity());
-    foo = std::numeric_limits<type>::lowest();
+    foo = type::get_lowest();
     ASSERT_TRUE(foo.isfinite());
     foo /= type(0.5);
     EXPECT_EQ(foo, type::get_negative_infinity());

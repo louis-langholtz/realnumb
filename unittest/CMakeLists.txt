@@ -28,6 +28,7 @@ FetchContent_MakeAvailable(googletest)
 
 set(Test_SRCS
     fixed.cpp
+    fixed_limits.cpp
     fixed_math.cpp
 )
 
