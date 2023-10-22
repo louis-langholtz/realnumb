@@ -41,4 +41,20 @@ if(REALNUMB_INSTALL)
 	install(FILES ${libinc}
 		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/realnumb
 		COMPONENT Library)
+
+	# install libraries
+	install(TARGETS realnumb
+		EXPORT realnumb-targets
+		COMPONENT Library
+		LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+		INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+	)
+
+	# install build system hooks for third-party apps
+	install(EXPORT realnumb-targets
+		FILE realnumb-targets.cmake
+		NAMESPACE realnumb::
+		DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/realnumb)
 endif()

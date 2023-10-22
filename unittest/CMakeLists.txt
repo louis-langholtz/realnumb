@@ -26,7 +26,10 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-file(GLOB Test_SRCS *.cpp)
+set(Test_SRCS
+    fixed.cpp
+    fixed_math.cpp
+)
 
 # Add an executable to the project using specified source files.
 # See details at: https://cmake.org/cmake/help/v3.1/command/add_executable.html

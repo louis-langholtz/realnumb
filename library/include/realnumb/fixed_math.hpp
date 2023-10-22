@@ -135,9 +135,9 @@ template <typename BT, unsigned int FB, int N = DefaultSinIterations>
 constexpr auto sin(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
     // Maclaurin series approximation...
-    // sin x = sum((-1^n)*(x^(2n+1))/(2n+1)!)
+    // sin x = sum((-1^n)*(x^(2n+1))/((2n+1)!))
     // sin(2) = 0.90929742682
-    // x - x^3/6 + x^5/120 - x^7/5040 + x^9/
+    // x - (x^3)/6 + (x^5)/120 - (x^7)/5040 + (x^9)/362880 + (x^11)/39916800
     // 2 - 8/6 = 0.666
     // 2 - 8/6 + 32/120 = 0.9333
     // 2 - 8/6 + 32/120 - 128/5040 = 0.90793650793
@@ -147,11 +147,28 @@ constexpr auto sin(fixed<BT, FB> arg) -> fixed<BT, FB>
     constexpr auto last = 2 * N + 1;
     auto pt = arg;
     auto ft = 1;
+#ifndef NDEBUG
+    auto last_ft = ft;
+    auto last_term = fixed<BT, FB>::get_max();
+#endif
     for (auto i = 3; i <= last; i += 2)
     {
         ft *= (i - 1) * i;
+#ifndef NDEBUG
+        assert(ft > last_ft);
+        last_ft = ft;
+#endif
         pt *= arg * arg;
         const auto term = pt / ft;
+#ifndef NDEBUG
+        const auto abs_term_double = abs(double(term));
+        const auto abs_last_term_double = abs(double(last_term));
+        assert(abs_term_double < abs_last_term_double);
+        last_term = term;
+#endif
+        if (term == 0) {
+            break;
+        }
         res += sgn * term;
         sgn = -sgn;
     }
