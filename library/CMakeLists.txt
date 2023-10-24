@@ -60,10 +60,10 @@ if(REALNUMB_INSTALL)
 
 	set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}
 		CACHE PATH "Location of header files")
-	configure_package_config_file(realnumb.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/realnumb.cmake
+	configure_package_config_file(realnumbConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/realnumbConfig.cmake
 		INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/realnumb
 		PATH_VARS INCLUDE_INSTALL_DIR
 	)
-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/realnumb.cmake
+	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/realnumbConfig.cmake
 		DESTINATION ${LIB_INSTALL_DIR}/cmake/realnumb)
 endif()
