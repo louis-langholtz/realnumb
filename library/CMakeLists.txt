@@ -57,4 +57,13 @@ if(REALNUMB_INSTALL)
 		FILE realnumb-targets.cmake
 		NAMESPACE realnumb::
 		DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/realnumb)
+
+	set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}
+		CACHE PATH "Location of header files")
+	configure_package_config_file(realnumb.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/realnumb.cmake
+		INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/realnumb
+		PATH_VARS INCLUDE_INSTALL_DIR
+	)
+	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/realnumb.cmake
+		DESTINATION ${LIB_INSTALL_DIR}/cmake/realnumb)
 endif()
