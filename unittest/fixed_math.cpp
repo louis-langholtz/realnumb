@@ -419,7 +419,7 @@ TYPED_TEST(fixed_math_, InfinityDividedByInfinityIsNaN)
 TYPED_TEST(fixed_math_, InfinityTimesZeroIsNaN)
 {
     using type = typename TestFixture::type;
-   EXPECT_TRUE(isnan(type::get_positive_infinity() * 0));
+    EXPECT_TRUE(isnan(type::get_positive_infinity() * 0));
 }
 
 TEST(fixed_math, BiggerValsIdenticallyInaccurate_fixed32)
@@ -468,4 +468,36 @@ TEST(fixed_math, nextafter)
     EXPECT_EQ(static_cast<double>(nextafter(fixed_32_2(0), fixed_32_2( 0))),  0.0);
     EXPECT_EQ(static_cast<double>(nextafter(fixed_32_2(0), fixed_32_2(+1))), +0.25);
     EXPECT_EQ(static_cast<double>(nextafter(fixed_32_2(0), fixed_32_2(-1))), -0.25);
+}
+
+TYPED_TEST(fixed_math_, nextafter_to_higher_is_higher)
+{
+    using type = typename TestFixture::type;
+    auto v = type::get_lowest();
+    auto last = v;
+    constexpr auto shift = (type::total_bits >= 32u)
+        ? (type::total_bits / 3)
+        : (type::total_bits / 2);
+    constexpr auto max = typename type::value_type(1) << shift;
+    for (auto i = 0; i < max; ++i) {
+        v = nextafter(v, type::get_max());
+        EXPECT_GT(v, last);
+        last = v;
+    }
+}
+
+TYPED_TEST(fixed_math_, nextafter_to_lower_is_lower)
+{
+    using type = typename TestFixture::type;
+    auto v = type::get_max();
+    auto last = v;
+    constexpr auto shift = (type::total_bits >= 32u)
+        ? (type::total_bits / 3)
+        : (type::total_bits / 2);
+    constexpr auto max = typename type::value_type(1) << shift;
+    for (auto i = 0; i < max; ++i) {
+        v = nextafter(v, type::get_lowest());
+        EXPECT_LT(v, last);
+        last = v;
+    }
 }
