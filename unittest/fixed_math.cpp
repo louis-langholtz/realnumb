@@ -1,10 +1,21 @@
 #include <gtest/gtest.h>
 
+#include <cmath> // for std::isnan, etc.
+
 #include <realnumb/fixed_math.hpp>
 
 using namespace realnumb;
 
 constexpr auto pi = double{3.14159265358979323846264338327950288};
+
+namespace {
+
+struct value_expect {
+    double value;
+    double tolerance; // actual time tolerance gives absolute
+};
+
+}
 
 template <typename T>
 class fixed_math_: public testing::Test {
@@ -61,176 +72,160 @@ TYPED_TEST(fixed_math_, isnan)
 TYPED_TEST(fixed_math_, log_zero_notfinite)
 {
     using type = typename TestFixture::type;
-    ASSERT_FALSE(isfinite(static_cast<double>(log(0.0))));
-    EXPECT_FALSE(isfinite(static_cast<double>(log(type(0)))));
+    ASSERT_FALSE(std::isfinite(static_cast<double>(std::log(0.0))));
+    EXPECT_FALSE(std::isfinite(static_cast<double>(log(type(0)))));
 }
 
 TYPED_TEST(fixed_math_, log_minus_one_isnan)
 {
     using type = typename TestFixture::type;
-    ASSERT_TRUE(isnan(static_cast<double>(log(-1.0))));
-    EXPECT_TRUE(isnan(static_cast<double>(log(type(-1)))));
+    ASSERT_TRUE(std::isnan(static_cast<double>(std::log(-1.0))));
+    EXPECT_TRUE(std::isnan(static_cast<double>(log(type(-1)))));
 }
 
 TEST(fixed_math, log_fixed32)
 {
-    ASSERT_NEAR(static_cast<double>(log(0.1)), -2.3025850929940455, 0.01);
+    ASSERT_NEAR(static_cast<double>(std::log(0.1)), -2.3025850929940455, 0.01);
     EXPECT_NEAR(static_cast<double>(log(fixed32(0.1))), -2.3025850929940455, 0.051);
 
-    ASSERT_NEAR(static_cast<double>(log(0.5)), -0.69314718055994529, 0.01);
+    ASSERT_NEAR(static_cast<double>(std::log(0.5)), -0.69314718055994529, 0.01);
     EXPECT_NEAR(static_cast<double>(log(fixed32(0.5))), -0.69314718055994529, 0.01);
 
-    ASSERT_NEAR(static_cast<double>(log(1.0)), 0.0, 0.01);
+    ASSERT_NEAR(static_cast<double>(std::log(1.0)), 0.0, 0.01);
     EXPECT_NEAR(static_cast<double>(log(fixed32(1.0))), 0.0, 0.01);
 
-    ASSERT_NEAR(static_cast<double>(log(1.5)), 0.40546510810816438, 0.01);
+    ASSERT_NEAR(static_cast<double>(std::log(1.5)), 0.40546510810816438, 0.01);
     EXPECT_NEAR(static_cast<double>(log(fixed32(1.5))), 0.40546510810816438, 0.01);
 
-    ASSERT_NEAR(static_cast<double>(log(2.0)), 0.69314718055994529, 0.01);
+    ASSERT_NEAR(static_cast<double>(std::log(2.0)), 0.69314718055994529, 0.01);
     EXPECT_NEAR(static_cast<double>(log(fixed32(2.0))), 0.69314718055994529, 0.012);
 
-    ASSERT_NEAR(static_cast<double>(log(2.1)), 0.74193734472937733, 0.01);
+    ASSERT_NEAR(static_cast<double>(std::log(2.1)), 0.74193734472937733, 0.01);
     EXPECT_NEAR(static_cast<double>(log(fixed32(2.1))), 0.74193734472937733, 0.0096);
 
-    ASSERT_NEAR(static_cast<double>(log(2.75)), 1.0116009116784799, 0.01);
+    ASSERT_NEAR(static_cast<double>(std::log(2.75)), 1.0116009116784799, 0.01);
     EXPECT_NEAR(static_cast<double>(log(fixed32(2.75))), 0.994140625, 0.0001);
 
-    ASSERT_NEAR(static_cast<double>(log(4.5)), 1.5040773967762742, 0.01);
+    ASSERT_NEAR(static_cast<double>(std::log(4.5)), 1.5040773967762742, 0.01);
     EXPECT_NEAR(static_cast<double>(log(fixed32(4.5))), 1.5040773967762742, 0.028);
 
-    ASSERT_NEAR(static_cast<double>(log(31.21)), 3.440738556282688, 0.01);
-    EXPECT_NEAR(static_cast<double>(log(fixed32(31.21))), log(31.21), 0.25);
+    ASSERT_NEAR(static_cast<double>(std::log(31.21)), 3.440738556282688, 0.01);
+    EXPECT_NEAR(static_cast<double>(log(fixed32(31.21))), std::log(31.21), 0.25);
 
     // Error gets pretty bad...
-    ASSERT_NEAR(static_cast<double>(log(491.721)), 6.1979114824747752, 0.01);
-    EXPECT_NEAR(static_cast<double>(log(fixed32(491.721))), log(491.721), 1.517);
+    ASSERT_NEAR(static_cast<double>(std::log(491.721)), 6.1979114824747752, 0.01);
+    EXPECT_NEAR(static_cast<double>(log(fixed32(491.721))), std::log(491.721), 1.517);
 
     EXPECT_EQ(static_cast<double>(log(fixed32::get_positive_infinity())),
-              log(std::numeric_limits<double>::infinity()));
+              std::log(std::numeric_limits<double>::infinity()));
 }
 
 TEST(fixed_math, exp_fixed32)
 {
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(0))), exp(0.0), 0.01);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(0.4))), exp(0.4), 0.02);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(0.9))), exp(0.9), 0.02);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(1.0))), exp(1.0), 0.02);
-
-    ASSERT_NEAR(static_cast<double>(exp(1.34)), 3.8190435053663361, 0.001);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(1.34))), exp(1.34), 0.019);
-
-    ASSERT_NEAR(static_cast<double>(exp(2.5)), 12.182493960703473, 0.01);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(2.5))), exp(2.5), 0.04);
-
-    ASSERT_NEAR(static_cast<double>(exp(3.15)), 23.336064580942711, 0.2);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(3.15))), 23.23828125, 0.01);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(3.15))), exp(3.15), 0.1);
-
-    ASSERT_NEAR(static_cast<double>(exp(4.8)), 121.51041751873485, 0.2);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(4.8))), 121.19140625, 0.01);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(4.8))), exp(4.8), 0.4);
-
-    ASSERT_NEAR(static_cast<double>(exp(7.1)), 1211.9670744925763, 0.2);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(7.1))), 1210.525390625, 0.01);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(7.1))), exp(7.1), 1.6);
-
-    ASSERT_NEAR(static_cast<double>(exp(8.9)), 7331.9735391559952, 0.2);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(8.9))), 7318.447265625, 0.01);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(8.9))), exp(8.9), 13.55);
-
-    ASSERT_NEAR(static_cast<double>(exp(10.1)), 24343.009424408381, 0.2);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(10.1))), 24322.119140625, 0.01);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(10.1))), exp(10.1), 22.0);
-
-    ASSERT_NEAR(static_cast<double>(exp(12.5)), 268337.28652087448, 0.2);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(12.5))), 267662.830078125, 0.01);
-
-    ASSERT_NEAR(static_cast<double>(exp(-1.0)), 0.36787944117144233, 0.0001);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(-1))), 0.36787944117144233, 0.001);
-
-    ASSERT_NEAR(static_cast<double>(exp(-2.0)), 0.1353352832366127, 0.0001);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(-2))), 0.13671875, 0.001);
-
-    ASSERT_NEAR(static_cast<double>(exp(-4.0)), 0.018315638888734179, 0.0001);
-    EXPECT_NEAR(static_cast<double>(exp(fixed32(-4))), 0.021484375, 0.001);
+    const auto terms = std::initializer_list<value_expect>{
+        {0.0, 0.001},
+        {0.4, 0.005},
+        {0.9, 0.008},
+        {1.0, 0.003},
+        {1.34, 0.005},
+        {2.5, 0.003},
+        {3.15, 0.004},
+        {4.8, 0.003},
+        {7.1, 0.002},
+        {8.9, 0.002},
+        {10.1, 0.001},
+        {12.5, 0.003},
+        {-1.0, 0.002},
+        {-2.0, 0.02},
+        {-4.0, 0.18}
+    };
+    for (const auto& term: terms) {
+        const auto expected = std::exp(term.value);
+        const auto abs_err = std::abs(expected) * term.tolerance;
+        std::ostringstream os;
+        os << "for value of ";
+        os << term.value;
+        os << ", with absolute error tolerance ";
+        os << abs_err;
+        SCOPED_TRACE(os.str());
+        EXPECT_NEAR(double(exp(fixed32(term.value))), expected, abs_err);
+    }
 }
 
 TEST(fixed_math, intpow_fixed32)
 {
-    ASSERT_NEAR(static_cast<double>(pow(0.0, 0)), 1.0, 0.0);
-    ASSERT_NEAR(static_cast<double>(pow(0.0, +1)), 0.0, 0.0);
-    ASSERT_FALSE(isfinite(static_cast<double>(pow(0.0, -1))));
+    ASSERT_NEAR(static_cast<double>(std::pow(0.0, 0)), 1.0, 0.0);
+    ASSERT_NEAR(static_cast<double>(std::pow(0.0, +1)), 0.0, 0.0);
+    ASSERT_FALSE(std::isfinite(static_cast<double>(std::pow(0.0, -1))));
 
     EXPECT_NEAR(static_cast<double>(pow(fixed32(0), 0)), 1.0, 0.0);
     EXPECT_NEAR(static_cast<double>(pow(fixed32(0), +1)), 0.0, 0.0);
-    EXPECT_FALSE(isfinite(static_cast<double>(pow(fixed32(0), -1))));
+    EXPECT_FALSE(std::isfinite(static_cast<double>(pow(fixed32(0), -1))));
 
     EXPECT_EQ(static_cast<double>(pow(fixed32::get_negative_infinity(), -1)),
-              pow(-std::numeric_limits<double>::infinity(), -1));
+              std::pow(-std::numeric_limits<double>::infinity(), -1));
     EXPECT_EQ(static_cast<double>(pow(fixed32::get_negative_infinity(), +1)),
-              pow(-std::numeric_limits<double>::infinity(), +1));
+              std::pow(-std::numeric_limits<double>::infinity(), +1));
     EXPECT_EQ(static_cast<double>(pow(fixed32::get_negative_infinity(), +2)),
-              pow(-std::numeric_limits<double>::infinity(), +2));
+              std::pow(-std::numeric_limits<double>::infinity(), +2));
     EXPECT_EQ(static_cast<double>(pow(fixed32::get_positive_infinity(), +2)),
-              pow(std::numeric_limits<double>::infinity(), +2));
+              std::pow(std::numeric_limits<double>::infinity(), +2));
     EXPECT_EQ(static_cast<double>(pow(fixed32::get_positive_infinity(), -2)),
-              pow(std::numeric_limits<double>::infinity(), -2));
+              std::pow(std::numeric_limits<double>::infinity(), -2));
 
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(0), 1)), pow(0.0, 1), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(0), 0)), pow(0.0, 0), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(1), 0)), pow(1.0, 0), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(1), +44)), pow(1.0, +44), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(1), -44)), pow(1.0, -44), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+1), +1)), pow(+1.0, +1), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(-1), +1)), pow(-1.0, +1), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+1), -1)), pow(+1.0, -1), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(-1), -1)), pow(-1.0, -1), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+2), +1)), pow(+2.0, +1), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), +1)), pow(+3.0, +1), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), +2)), pow(+3.0, +2), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), +3)), pow(+3.0, +3), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+9), +2)), pow(+9.0, +2), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+9), -1)), pow(+9.0, -1), 0.01);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), -1)), pow(+3.0, -1), 0.01);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+9), -2)), pow(+9.0, -2), 0.01);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), -2)), pow(+3.0, -2), 0.01);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+10), -2)), pow(+10.0, -2), 0.01);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(0), 1)), std::pow(0.0, 1), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(0), 0)), std::pow(0.0, 0), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(1), 0)), std::pow(1.0, 0), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(1), +44)), std::pow(1.0, +44), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(1), -44)), std::pow(1.0, -44), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+1), +1)), std::pow(+1.0, +1), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(-1), +1)), std::pow(-1.0, +1), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+1), -1)), std::pow(+1.0, -1), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(-1), -1)), std::pow(-1.0, -1), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+2), +1)), std::pow(+2.0, +1), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), +1)), std::pow(+3.0, +1), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), +2)), std::pow(+3.0, +2), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), +3)), std::pow(+3.0, +3), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+9), +2)), std::pow(+9.0, +2), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+9), -1)), std::pow(+9.0, -1), 0.01);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), -1)), std::pow(+3.0, -1), 0.01);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+9), -2)), std::pow(+9.0, -2), 0.01);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), -2)), std::pow(+3.0, -2), 0.01);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+10), -2)), std::pow(+10.0, -2), 0.01);
 }
 
 TEST(fixed_math, regpow_fixed32)
 {
-    ASSERT_NEAR(pow(0.0, 0.0), 1.0, 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(0), fixed32(0))), pow(0.0, 0.0), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(1), fixed32(0))), pow(1.0, 0.0), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(1), fixed32(+44.2))), pow(1.0, +44.2), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(1), fixed32(-44.2))), pow(1.0, -44.2), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+1), fixed32(+1))), pow(+1.0, +1.0), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(-1), fixed32(+1))), pow(-1.0, +1.0), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+1), fixed32(-1))), pow(+1.0, -1.0), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(-1), fixed32(-1))), pow(-1.0, -1.0), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+2), fixed32(+1))), pow(+2.0, +1.0), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), fixed32(+1))), pow(+3.0, +1.0), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), fixed32(+2))), pow(+3.0, +2.0), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), fixed32(+3))), pow(+3.0, +3.0), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+9), fixed32(+2))), pow(+9.0, +2.0), 0.0);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+9), fixed32(-1))), pow(+9.0, -1.0), 0.01);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), fixed32(-1))), pow(+3.0, -1.0), 0.01);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+9), fixed32(-2))), pow(+9.0, -2.0), 0.01);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), fixed32(-2))), pow(+3.0, -2.0), 0.01);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+10), fixed32(-2))), pow(+10.0, -2.0), 0.01);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(-10), fixed32(-2))), pow(-10.0, -2.0), 0.01);
-
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+4), fixed32(+2.3))), pow(+4.0, +2.3), 0.97);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+4), fixed32(-2.3))), pow(+4.0, -2.3), 0.1);
-
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3.1), fixed32(+2.3))), pow(+3.1, +2.3), 0.75);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3.1), fixed32(-2.3))), pow(+3.1, -2.3), 0.1);
-
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3.1), fixed32(+4.3))), pow(+3.1, +4.3), 12.3);
-    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3.1), fixed32(-4.3))), pow(+3.1, -4.3), 0.3);
-
-    EXPECT_EQ(isnan(static_cast<double>(pow(fixed32(-4), fixed32(+2.3)))), isnan(pow(-4.0, +2.3)));
-    EXPECT_EQ(isnan(static_cast<double>(pow(fixed32(-4), fixed32(-2.3)))), isnan(pow(-4.0, -2.3)));
+    ASSERT_NEAR(std::pow(0.0, 0.0), 1.0, 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(0), fixed32(0))), std::pow(0.0, 0.0), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(1), fixed32(0))), std::pow(1.0, 0.0), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(1), fixed32(+44.2))), std::pow(1.0, +44.2), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(1), fixed32(-44.2))), std::pow(1.0, -44.2), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+1), fixed32(+1))), std::pow(+1.0, +1.0), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(-1), fixed32(+1))), std::pow(-1.0, +1.0), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+1), fixed32(-1))), std::pow(+1.0, -1.0), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(-1), fixed32(-1))), std::pow(-1.0, -1.0), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+2), fixed32(+1))), std::pow(+2.0, +1.0), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), fixed32(+1))), std::pow(+3.0, +1.0), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), fixed32(+2))), std::pow(+3.0, +2.0), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), fixed32(+3))), std::pow(+3.0, +3.0), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+9), fixed32(+2))), std::pow(+9.0, +2.0), 0.0);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+9), fixed32(-1))), std::pow(+9.0, -1.0), 0.01);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), fixed32(-1))), std::pow(+3.0, -1.0), 0.01);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+9), fixed32(-2))), std::pow(+9.0, -2.0), 0.01);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3), fixed32(-2))), std::pow(+3.0, -2.0), 0.01);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+10), fixed32(-2))), std::pow(+10.0, -2.0), 0.01);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(-10), fixed32(-2))), std::pow(-10.0, -2.0), 0.01);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+4), fixed32(+2.3))), std::pow(+4.0, +2.3), 0.97);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+4), fixed32(-2.3))), std::pow(+4.0, -2.3), 0.1);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3.1), fixed32(+2.3))), std::pow(+3.1, +2.3), 0.75);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3.1), fixed32(-2.3))), std::pow(+3.1, -2.3), 0.1);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3.1), fixed32(+4.3))), std::pow(+3.1, +4.3), 12.3);
+    EXPECT_NEAR(static_cast<double>(pow(fixed32(+3.1), fixed32(-4.3))), std::pow(+3.1, -4.3), 0.3);
+    EXPECT_EQ(std::isnan(static_cast<double>(pow(fixed32(-4), fixed32(+2.3)))),
+              std::isnan(std::pow(-4.0, +2.3)));
+    EXPECT_EQ(std::isnan(static_cast<double>(pow(fixed32(-4), fixed32(-2.3)))),
+              std::isnan(std::pow(-4.0, -2.3)));
 }
 
 TEST(fixed_math, sqrt_fixed32)
@@ -249,7 +244,7 @@ TEST(fixed_math, sqrt_fixed32)
 
     for (auto i = 0; i < 10000; ++i)
     {
-        EXPECT_NEAR(static_cast<double>(sqrt(fixed32(i))), sqrt(double(i)), 0.01);
+        EXPECT_NEAR(static_cast<double>(sqrt(fixed32(i))), std::sqrt(double(i)), 0.01);
     }
 
     for (auto v = 1.0; v > 0.0; v /= 1.1)
@@ -260,13 +255,13 @@ TEST(fixed_math, sqrt_fixed32)
             break;
         }
         EXPECT_LE(abs((sqrt(fixedv) * sqrt(fixedv)) - fixedv), fixed32::get_min());
-        EXPECT_NEAR(static_cast<double>(sqrt(fixedv)), sqrt(static_cast<double>(fixedv)), tolerance * 5);
+        EXPECT_NEAR(static_cast<double>(sqrt(fixedv)), std::sqrt(static_cast<double>(fixedv)), tolerance * 5);
     }
     const auto maxV = static_cast<double>(std::numeric_limits<fixed32>::max());
     for (auto v = 1.0; v < maxV; v *= 1.1)
     {
         const auto fixedv = fixed32{v};
-        EXPECT_NEAR(static_cast<double>(sqrt(fixedv)), sqrt(v), tolerance);
+        EXPECT_NEAR(static_cast<double>(sqrt(fixedv)), std::sqrt(v), tolerance);
         //EXPECT_LE(abs(Square(sqrt(fixedv)) - fixedv), fixed32::get_min() * 5);
     }
 }
@@ -280,7 +275,7 @@ TYPED_TEST(fixed_math_, hypot)
         for (auto j = 0; i < 100; ++i)
         {
             EXPECT_NEAR(static_cast<double>(hypot(type(i), type(j))),
-                        hypot(double(i), double(j)), tolerance);
+                        std::hypot(double(i), double(j)), tolerance);
         }
     }
 }
@@ -381,22 +376,22 @@ TYPED_TEST(fixed_math_, atan)
 {
     using type = typename TestFixture::type;
     EXPECT_NEAR(static_cast<double>(atan(type::get_positive_infinity())),
-                atan(std::numeric_limits<double>::infinity()), 0.001);
+                std::atan(std::numeric_limits<double>::infinity()), 0.001);
     EXPECT_NEAR(static_cast<double>(atan(type::get_negative_infinity())),
-                atan(-std::numeric_limits<double>::infinity()), 0.001);
+                std::atan(-std::numeric_limits<double>::infinity()), 0.001);
 }
 
 TEST(fixed_math, atan2_specials_fixed32)
 {
-    EXPECT_TRUE(isnan(static_cast<double>(atan2(fixed32(0), fixed32(0)))));
-    EXPECT_NEAR(static_cast<double>(atan2(fixed32(+1), fixed32(0))), atan2(+1.0, 0.0), 0.01);
-    EXPECT_NEAR(static_cast<double>(atan2(fixed32(-1), fixed32(0))), atan2(-1.0, 0.0), 0.01);
-    EXPECT_NEAR(static_cast<double>(atan2(fixed32(0), fixed32(+1))), atan2(0.0, +1.0), 0.01);
-    EXPECT_NEAR(static_cast<double>(atan2(fixed32(0), fixed32(-1))), atan2(0.0, -1.0), 0.01);
-    EXPECT_NEAR(static_cast<double>(atan2(fixed32(+1), fixed32(+1))), atan2(+1.0, +1.0), 0.05);
-    EXPECT_NEAR(static_cast<double>(atan2(fixed32(+1), fixed32(-1))), atan2(+1.0, -1.0), 0.05);
-    EXPECT_NEAR(static_cast<double>(atan2(fixed32(-1), fixed32(+1))), atan2(-1.0, +1.0), 0.05);
-    EXPECT_NEAR(static_cast<double>(atan2(fixed32(-1), fixed32(-1))), atan2(-1.0, -1.0), 0.05);
+    EXPECT_TRUE(std::isnan(static_cast<double>(atan2(fixed32(0), fixed32(0)))));
+    EXPECT_NEAR(static_cast<double>(atan2(fixed32(+1), fixed32(0))), std::atan2(+1.0, 0.0), 0.01);
+    EXPECT_NEAR(static_cast<double>(atan2(fixed32(-1), fixed32(0))), std::atan2(-1.0, 0.0), 0.01);
+    EXPECT_NEAR(static_cast<double>(atan2(fixed32(0), fixed32(+1))), std::atan2(0.0, +1.0), 0.01);
+    EXPECT_NEAR(static_cast<double>(atan2(fixed32(0), fixed32(-1))), std::atan2(0.0, -1.0), 0.01);
+    EXPECT_NEAR(static_cast<double>(atan2(fixed32(+1), fixed32(+1))), std::atan2(+1.0, +1.0), 0.05);
+    EXPECT_NEAR(static_cast<double>(atan2(fixed32(+1), fixed32(-1))), std::atan2(+1.0, -1.0), 0.05);
+    EXPECT_NEAR(static_cast<double>(atan2(fixed32(-1), fixed32(+1))), std::atan2(-1.0, +1.0), 0.05);
+    EXPECT_NEAR(static_cast<double>(atan2(fixed32(-1), fixed32(-1))), std::atan2(-1.0, -1.0), 0.05);
 }
 
 TEST(fixed_math, atan2_angles_fixed32)
@@ -404,8 +399,8 @@ TEST(fixed_math, atan2_angles_fixed32)
     for (auto angleInDegs = -90; angleInDegs < +90; ++angleInDegs)
     {
         const auto angle = angleInDegs * pi / 180;
-        const auto s = sin(angle);
-        const auto c = cos(angle);
+        const auto s = std::sin(angle);
+        const auto c = std::cos(angle);
         EXPECT_NEAR(static_cast<double>(atan2(fixed32(s), fixed32(c))), angle, 0.05);
     }
 }
