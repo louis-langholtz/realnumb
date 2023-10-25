@@ -606,6 +606,22 @@ constexpr auto floor(const fixed<BT, FB>& value) -> fixed<BT, FB>
     return (tmp > value)? (value - 1): tmp;
 }
 
+/// @see https://en.cppreference.com/w/cpp/numeric/math/fpclassify.
+template <class BT, unsigned FB>
+constexpr auto fpclassify(fixed<BT, FB> value) -> int
+{
+    if (value.isnan()) {
+        return FP_NAN;
+    }
+    if (!value.isfinite()) {
+        return FP_INFINITE;
+    }
+    if (value == fixed<BT, FB>{}) {
+        return FP_ZERO;
+    }
+    return FP_NORMAL;
+}
+
 /// @}
 
 } // namespace realnumb

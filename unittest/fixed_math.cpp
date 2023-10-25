@@ -496,3 +496,13 @@ TYPED_TEST(fixed_math_, nextafter_to_lower_is_lower)
         last = v;
     }
 }
+
+TYPED_TEST(fixed_math_, fpclassify)
+{
+    using type = typename TestFixture::type;
+    EXPECT_EQ(fpclassify(type::get_nan()), FP_NAN);
+    EXPECT_EQ(fpclassify(type::get_positive_infinity()), FP_INFINITE);
+    EXPECT_EQ(fpclassify(type::get_negative_infinity()), FP_INFINITE);
+    EXPECT_EQ(fpclassify(type()), FP_ZERO);
+    EXPECT_EQ(fpclassify(type(1)), FP_NORMAL);
+}
