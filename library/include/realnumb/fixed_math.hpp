@@ -62,14 +62,12 @@ constexpr auto exp(fixed<BT, FB> arg) -> fixed<BT, FB>
     // e^x = 1 + x + x^2/2! + x^3/3! + ...
     // Note: e^(x+y) = e^x * e^y.
     // Note: convergence is slower for arg > 2 and overflow happens by i == 9
-    auto pt = arg;
-    auto res = pt + 1;
-    auto ft = 1;
-    auto last = pt / ft;
-    for (auto i = 2; i < N; ++i)
+    auto res = arg + 1;
+    auto last = arg;
+    for (auto i = 2; (last != 0) && (i < N); ++i)
     {
         // have to avoid unnecessarily overflowing...
-        last /= i;
+        last /= i; // for factorial
         last *= arg;
         res += last;
     }
@@ -146,32 +144,33 @@ constexpr auto sin(fixed<BT, FB> arg) -> fixed<BT, FB>
     auto sgn = -1;
     constexpr auto last = 2 * N + 1;
     auto pt = arg;
-    auto ft = 1;
+    auto ft = BT(1);
 #ifndef NDEBUG
     auto last_ft = ft;
-    auto last_term = fixed<BT, FB>::get_max();
 #endif
+    auto last_term = fixed<BT, FB>::get_max();
     for (auto i = 3; i <= last; i += 2)
     {
         ft *= (i - 1) * i;
 #ifndef NDEBUG
-        assert(ft > last_ft);
+        assert(ft > last_ft); // confirm no overflow of ft
         last_ft = ft;
 #endif
         pt *= arg * arg;
         const auto term = pt / ft;
-#ifndef NDEBUG
-        const auto abs_term_double = abs(double(term));
-        const auto abs_last_term_double = abs(double(last_term));
-        assert(abs_term_double < abs_last_term_double);
-        last_term = term;
-#endif
-        if (term == 0) {
+        if (abs(term) >= abs(last_term)) {
             break;
         }
+        last_term = term;
         res += sgn * term;
         sgn = -sgn;
     }
+#ifndef NDEBUG
+    constexpr auto positive_one = fixed<BT, FB>(+1);
+    constexpr auto negative_one = fixed<BT, FB>(-1);
+    assert(res >= negative_one);
+    assert(res <= positive_one);
+#endif
     return res;
 }
 
@@ -443,7 +442,23 @@ constexpr auto isnormal(fixed<BT, FB> arg) -> bool
 template <typename BT, unsigned int FB>
 constexpr auto sin(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
+    if (arg.isnan()) {
+        return arg;
+    }
+    if (!arg.isfinite()) {
+        return fixed<BT, FB>::get_nan();
+    }
+    if (arg == fixed<BT, FB>()) {
+        return arg;
+    }
     arg = detail::angular_normalize(arg);
+    // detail::sin seems more accurate within -90 to +90, so convert 91 to 89, etc...
+    if (arg > +detail::FixedPi<BT, FB> / 2) {
+        arg = +detail::FixedPi<BT, FB> - arg;
+    }
+    else if (arg < -detail::FixedPi<BT, FB> / 2) {
+        arg = -detail::FixedPi<BT, FB> - arg;
+    }
     return detail::sin<BT, FB>(arg);
 }
 
@@ -519,7 +534,7 @@ constexpr auto log(fixed<BT, FB> arg) -> fixed<BT, FB>
 template <typename BT, unsigned int FB>
 constexpr auto exp(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
-    return (arg <= detail::ExpMaxForLowerIterations)
+    return (abs(arg) <= detail::ExpMaxForLowerIterations)
         ? detail::exp<BT, FB, detail::DefaultExpIterations>(arg)
         : detail::exp<BT, FB, detail::ExpIterationsForLarger>(arg);
 }

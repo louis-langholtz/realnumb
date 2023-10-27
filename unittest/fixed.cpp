@@ -115,8 +115,14 @@ TYPED_TEST(fixed_, FloatConstruction)
 
 TEST(fixed, get_min)
 {
+    EXPECT_GT(fixed32::get_min(), fixed32(0));
+    EXPECT_LT(fixed32::get_min(), fixed32(1));
+    EXPECT_EQ(fixed32::get_min(), fixed32(0, 1u));
     EXPECT_NEAR(static_cast<double>(fixed32::get_min()), 0.001953125, 0.00001);
 #ifdef REALNUMB_INT128
+    EXPECT_GT(fixed64::get_min(), fixed64(0));
+    EXPECT_LT(fixed64::get_min(), fixed64(1));
+    EXPECT_EQ(fixed64::get_min(), fixed64(0, 1u));
     EXPECT_NEAR(static_cast<double>(fixed64::get_min()), 5.9604644775390625e-08, 0.0);
 #endif
 }
@@ -237,9 +243,21 @@ TYPED_TEST(fixed_, Division)
     }
     EXPECT_EQ(type(9) / type(3), type(3));
     EXPECT_EQ(type(81) / type(9), type(9));
+    EXPECT_EQ(type(+10) / type(2), type(+5));
     EXPECT_EQ(type(-10) / type(2), type(-5));
     EXPECT_EQ(type(1) / type(2), type(0.5));
-    EXPECT_EQ(type(7) / type(3), type(7.0/3.0));
+    {
+        const auto n = 7.0;
+        const auto d = 3.0;
+        const auto result = type(n) / type(d);
+        const auto expected = type(n / d);
+        const auto expected_hi = expected + type::get_min();
+        const auto expected_lo = expected - type::get_min();
+        EXPECT_LE(result, expected_hi);
+        EXPECT_GE(result, expected_lo);
+    }
+    EXPECT_EQ(type(7) / type(2), type(7.0/2.0));
+    EXPECT_EQ(type(0, 63u) / type(2), type(0, 32u));
 
     // Confirm int divided by fixed32 gets promoted to fixed32 divided by fixed32
     EXPECT_EQ(1 / type(2), type(0.5));

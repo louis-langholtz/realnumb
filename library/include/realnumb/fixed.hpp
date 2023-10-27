@@ -436,7 +436,8 @@ public:
         else
         {
             const auto product = wider_type{m_value} * wider_type{val.m_value};
-            const auto result = product / scale_factor;
+            const auto offset = (((product < 0) == (scale_factor < 0)) ? scale_factor : -scale_factor) / 2;
+            const auto result = (product + offset) / scale_factor;
             m_value = (product != 0 && result == 0) // newline!
                 ? static_cast<value_type>(result) // newline!
                 : (result > get_max().m_value) // newline!
@@ -471,7 +472,8 @@ public:
         else
         {
             const auto product = wider_type{m_value} * scale_factor;
-            const auto result = product / val.m_value;
+            const auto offset = (((product < 0) == (val.m_value < 0)) ? val.m_value : -val.m_value) / 2;
+            const auto result = (product + offset) / val.m_value;
             m_value = (product != 0 && result == 0) // newline!
                 ? static_cast<value_type>(result) // newline!
                 : (result > get_max().m_value) // newline!

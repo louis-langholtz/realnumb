@@ -15,6 +15,15 @@ struct value_expect {
     double tolerance; // actual time tolerance gives absolute
 };
 
+template <int N, class T>
+auto next_after(T from, T to) -> decltype(nextafter(from, to))
+{
+    for (auto i = 0; i < N; ++i) {
+        from = nextafter(from, to);
+    }
+    return from;
+}
+
 }
 
 template <typename T>
@@ -30,6 +39,28 @@ using fixed_types = ::testing::Types<
 #endif
 >;
 TYPED_TEST_SUITE(fixed_math_, fixed_types);
+
+TYPED_TEST(fixed_math_, round_trip_pi)
+{
+    using type = typename TestFixture::type;
+    // check within 1 ULP...
+    EXPECT_GE(double(type(pi) + type::get_min()), pi);
+    EXPECT_LE(double(type(pi) - type::get_min()), pi);
+}
+
+TYPED_TEST(fixed_math_, angular_normalize)
+{
+    using type = typename TestFixture::type;
+    EXPECT_EQ(detail::angular_normalize(+type( 0) * 1.0), +type( 0) * 1.0);
+    EXPECT_EQ(detail::angular_normalize(+type(pi) * 1.0), +type(pi) * 1.0);
+    EXPECT_EQ(detail::angular_normalize(+type(pi) * 1.5), -type(pi) * 0.5);
+    EXPECT_EQ(detail::angular_normalize(+type(pi) * 2.0), +type( 0) * 1.0);
+    EXPECT_EQ(detail::angular_normalize(+type(pi) * 3.0), +type(pi) * 1.0);
+    EXPECT_EQ(detail::angular_normalize(-type(pi) * 1.0), -type(pi) * 1.0);
+    EXPECT_EQ(detail::angular_normalize(-type(pi) * 1.5), +type(pi) * 0.5);
+    EXPECT_EQ(detail::angular_normalize(-type(pi) * 2.0), -type( 0) * 1.0);
+    EXPECT_EQ(detail::angular_normalize(-type(pi) * 3.0), -type(pi) * 1.0);
+}
 
 TYPED_TEST(fixed_math_, isfinite)
 {
@@ -69,55 +100,67 @@ TYPED_TEST(fixed_math_, isnan)
     EXPECT_TRUE(isnan(-type::get_positive_infinity() + type::get_positive_infinity()));
 }
 
-TYPED_TEST(fixed_math_, log_zero_notfinite)
+TYPED_TEST(fixed_math_, log_error_handling_same_as_double)
 {
     using type = typename TestFixture::type;
-    ASSERT_FALSE(std::isfinite(static_cast<double>(std::log(0.0))));
-    EXPECT_FALSE(std::isfinite(static_cast<double>(log(type(0)))));
+    EXPECT_EQ(isnan(log(type::get_nan())), std::isnan(std::log(std::numeric_limits<double>::quiet_NaN())));
+    EXPECT_EQ(isnan(log(type(-42.0))), std::isnan(std::log(-42.0)));
+    EXPECT_EQ(log(type(1.0)), std::log(1.0));
+    EXPECT_EQ(log(type(0.0)), std::log(0.0));
+    EXPECT_EQ(log(type::get_positive_infinity()), std::log(std::numeric_limits<double>::infinity()));
 }
 
-TYPED_TEST(fixed_math_, log_minus_one_isnan)
+TYPED_TEST(fixed_math_, log_error_handling_as_specified)
 {
     using type = typename TestFixture::type;
-    ASSERT_TRUE(std::isnan(static_cast<double>(std::log(-1.0))));
-    EXPECT_TRUE(std::isnan(static_cast<double>(log(type(-1)))));
+    EXPECT_TRUE(isnan(log(type::get_nan())));
+    EXPECT_TRUE(isnan(log(type(-42.0))));
+    EXPECT_EQ(log(type(1)), type(0));
+    EXPECT_EQ(log(type(0)), type::get_negative_infinity());
+    EXPECT_EQ(log(type::get_positive_infinity()), type::get_positive_infinity());
 }
 
 TEST(fixed_math, log_fixed32)
 {
-    ASSERT_NEAR(static_cast<double>(std::log(0.1)), -2.3025850929940455, 0.01);
-    EXPECT_NEAR(static_cast<double>(log(fixed32(0.1))), -2.3025850929940455, 0.051);
+    ASSERT_DOUBLE_EQ(std::log(0.1), -2.3025850929940455);
+    EXPECT_NEAR(static_cast<double>(log(fixed32(0.1))), std::log(0.1),
+                double(fixed32::get_min() * 1));
 
-    ASSERT_NEAR(static_cast<double>(std::log(0.5)), -0.69314718055994529, 0.01);
-    EXPECT_NEAR(static_cast<double>(log(fixed32(0.5))), -0.69314718055994529, 0.01);
+    ASSERT_DOUBLE_EQ(std::log(0.5), -0.69314718055994529);
+    EXPECT_NEAR(static_cast<double>(log(fixed32(0.5))), std::log(0.5),
+                double(fixed32::get_min() * 1));
 
-    ASSERT_NEAR(static_cast<double>(std::log(1.0)), 0.0, 0.01);
-    EXPECT_NEAR(static_cast<double>(log(fixed32(1.0))), 0.0, 0.01);
+    ASSERT_DOUBLE_EQ(std::log(1.0), 0.0);
+    EXPECT_NEAR(static_cast<double>(log(fixed32(1.0))), 0.0,
+                double(fixed32::get_min() * 0));
 
-    ASSERT_NEAR(static_cast<double>(std::log(1.5)), 0.40546510810816438, 0.01);
-    EXPECT_NEAR(static_cast<double>(log(fixed32(1.5))), 0.40546510810816438, 0.01);
+    ASSERT_DOUBLE_EQ(std::log(1.5), 0.40546510810816438);
+    EXPECT_NEAR(static_cast<double>(log(fixed32(1.5))), std::log(1.5),
+                double(fixed32::get_min() * 1));
 
-    ASSERT_NEAR(static_cast<double>(std::log(2.0)), 0.69314718055994529, 0.01);
-    EXPECT_NEAR(static_cast<double>(log(fixed32(2.0))), 0.69314718055994529, 0.012);
+    ASSERT_DOUBLE_EQ(std::log(2.0),  0.69314718055994529);
+    EXPECT_NEAR(static_cast<double>(log(fixed32(2.0))), std::log(2.0),
+                double(fixed32::get_min() * 9));
 
-    ASSERT_NEAR(static_cast<double>(std::log(2.1)), 0.74193734472937733, 0.01);
-    EXPECT_NEAR(static_cast<double>(log(fixed32(2.1))), 0.74193734472937733, 0.0096);
+    ASSERT_DOUBLE_EQ(std::log(2.1), 0.74193734472937733);
+    EXPECT_NEAR(static_cast<double>(log(fixed32(2.1))), std::log(2.1),
+                double(fixed32::get_min() * 1));
 
-    ASSERT_NEAR(static_cast<double>(std::log(2.75)), 1.0116009116784799, 0.01);
-    EXPECT_NEAR(static_cast<double>(log(fixed32(2.75))), 0.994140625, 0.0001);
+    ASSERT_DOUBLE_EQ(std::log(2.75), 1.0116009116784799);
+    EXPECT_NEAR(static_cast<double>(log(fixed32(2.75))), std::log(2.75),
+                double(fixed32::get_min() * 2));
 
-    ASSERT_NEAR(static_cast<double>(std::log(4.5)), 1.5040773967762742, 0.01);
-    EXPECT_NEAR(static_cast<double>(log(fixed32(4.5))), 1.5040773967762742, 0.028);
+    ASSERT_DOUBLE_EQ(std::log(4.5), 1.5040773967762742);
+    EXPECT_NEAR(static_cast<double>(log(fixed32(4.5))), std::log(4.5),
+                double(fixed32::get_min() * 2));
 
-    ASSERT_NEAR(static_cast<double>(std::log(31.21)), 3.440738556282688, 0.01);
-    EXPECT_NEAR(static_cast<double>(log(fixed32(31.21))), std::log(31.21), 0.25);
+    ASSERT_DOUBLE_EQ(std::log(31.21), 3.440738556282688);
+    EXPECT_NEAR(static_cast<double>(log(fixed32(31.21))), std::log(31.21),
+                double(fixed32::get_min() * 10));
 
-    // Error gets pretty bad...
-    ASSERT_NEAR(static_cast<double>(std::log(491.721)), 6.1979114824747752, 0.01);
-    EXPECT_NEAR(static_cast<double>(log(fixed32(491.721))), std::log(491.721), 1.517);
-
-    EXPECT_EQ(static_cast<double>(log(fixed32::get_positive_infinity())),
-              std::log(std::numeric_limits<double>::infinity()));
+    ASSERT_DOUBLE_EQ(std::log(491.721), 6.1979114824747752);
+    EXPECT_NEAR(static_cast<double>(log(fixed32(491.721))), std::log(491.721),
+                1.517);
 }
 
 TEST(fixed_math, exp_fixed32)
@@ -135,9 +178,9 @@ TEST(fixed_math, exp_fixed32)
         {8.9, 0.002},
         {10.1, 0.001},
         {12.5, 0.003},
-        {-1.0, 0.002},
+        {-1.0, 0.004},
         {-2.0, 0.02},
-        {-4.0, 0.18}
+        {-4.0, 0.041}
     };
     for (const auto& term: terms) {
         const auto expected = std::exp(term.value);
@@ -228,34 +271,53 @@ TEST(fixed_math, regpow_fixed32)
               std::isnan(std::pow(-4.0, -2.3)));
 }
 
+TYPED_TEST(fixed_math_, sqrt_error_handling)
+{
+    using type = typename TestFixture::type;
+    EXPECT_TRUE(isnan(sqrt(type::get_lowest())));
+    EXPECT_TRUE(isnan(sqrt(type(-1))));
+    EXPECT_EQ(sqrt(type(0)), type(0));
+    EXPECT_EQ(sqrt(type::get_positive_infinity()), type::get_positive_infinity());
+    EXPECT_TRUE(isnan(sqrt(type::get_nan())));
+}
+
+TYPED_TEST(fixed_math_, sqrt_basics)
+{
+    using type = typename TestFixture::type;
+    EXPECT_EQ(sqrt(type(1)), type(1));
+    EXPECT_EQ((sqrt(type::get_min()) * sqrt(type::get_min())), type::get_min());
+    EXPECT_NEAR(double(sqrt(type::get_min())), std::sqrt(double(type::get_min())),
+                double(type::get_min() * 6));
+}
+
+TYPED_TEST(fixed_math_, sqrt_0_to_10000_within_1ulps)
+{
+    using type = typename TestFixture::type;
+    for (auto i = 0; i < 10000; ++i) {
+        std::ostringstream os;
+        os << "for value of " << i;
+        SCOPED_TRACE(os.str());
+        EXPECT_NEAR(double(sqrt(type(i))), std::sqrt(double(i)), double(type::get_min()));
+    }
+}
+
 TEST(fixed_math, sqrt_fixed32)
 {
     const auto tolerance = static_cast<double>(fixed32::get_min());
-
-    EXPECT_TRUE(isnan(sqrt(fixed32{-1})));
-    EXPECT_TRUE(isnan(sqrt(fixed32::get_nan())));
-    EXPECT_EQ(sqrt(fixed32{0}), fixed32{0});
-    EXPECT_EQ(sqrt(fixed32::get_positive_infinity()), fixed32::get_positive_infinity());
-    EXPECT_EQ(sqrt(fixed32::get_min()), fixed32(0.046875));
-    EXPECT_EQ((sqrt(fixed32::get_min()) * sqrt(fixed32::get_min())), fixed32::get_min());
-    EXPECT_EQ(sqrt(fixed32{1}), fixed32{1});
     EXPECT_NEAR(static_cast<double>(sqrt(fixed32{0.25})), 0.5, 0.0);
     EXPECT_NEAR(static_cast<double>(sqrt(fixed32{0.0625})), 0.25, tolerance);
-
-    for (auto i = 0; i < 10000; ++i)
-    {
-        EXPECT_NEAR(static_cast<double>(sqrt(fixed32(i))), std::sqrt(double(i)), 0.01);
-    }
-
     for (auto v = 1.0; v > 0.0; v /= 1.1)
     {
         const auto fixedv = fixed32{v};
-        if (fixedv == fixed32{0})
-        {
+        if (fixedv == fixed32{0}) {
             break;
         }
+        std::ostringstream os;
+        os << "for double value of " << v;
+        SCOPED_TRACE(os.str());
         EXPECT_LE(abs((sqrt(fixedv) * sqrt(fixedv)) - fixedv), fixed32::get_min());
-        EXPECT_NEAR(static_cast<double>(sqrt(fixedv)), std::sqrt(static_cast<double>(fixedv)), tolerance * 5);
+        EXPECT_NEAR(double(sqrt(fixedv)), std::sqrt(double(fixedv)),
+                    double(fixed32::get_min() * 6));
     }
     const auto maxV = static_cast<double>(std::numeric_limits<fixed32>::max());
     for (auto v = 1.0; v < maxV; v *= 1.1)
@@ -277,6 +339,113 @@ TYPED_TEST(fixed_math_, hypot)
             EXPECT_NEAR(static_cast<double>(hypot(type(i), type(j))),
                         std::hypot(double(i), double(j)), tolerance);
         }
+    }
+}
+
+TYPED_TEST(fixed_math_, sin_error_handling)
+{
+    using type = typename TestFixture::type;
+    EXPECT_EQ(sin(type(0)), type(0));
+    EXPECT_TRUE(isnan(sin(type::get_positive_infinity())));
+    EXPECT_TRUE(isnan(sin(type::get_negative_infinity())));
+}
+
+TYPED_TEST(fixed_math_, cos_error_handling)
+{
+    using type = typename TestFixture::type;
+    EXPECT_EQ(cos(type(0)), type(1));
+    EXPECT_TRUE(isnan(cos(type::get_positive_infinity())));
+    EXPECT_TRUE(isnan(cos(type::get_negative_infinity())));
+}
+
+TYPED_TEST(fixed_math_, sin_basic_shape)
+{
+    using type = typename TestFixture::type;
+    auto last = type(0);
+    const auto trace_msg = [](int i, double angle_in_radians) -> std::string {
+        std::ostringstream os;
+        os << "for angle of " << i << " degrees, or " << angle_in_radians << " radians";
+        return os.str();
+    };
+    for (auto i = 1; i <= 90; ++i) {
+        const auto angle_in_radians = (double(i) * pi) / 180.0;
+        SCOPED_TRACE(trace_msg(i, angle_in_radians));
+        const auto result = sin(type(angle_in_radians));
+        EXPECT_GE(result, last);
+        last = result;
+    }
+    for (auto i = 91; i <= 180; ++i) {
+        const auto angle_in_radians = (double(i) * pi) / 180.0;
+        SCOPED_TRACE(trace_msg(i, angle_in_radians));
+        const auto result = sin(type(angle_in_radians));
+        EXPECT_LE(result, last);
+        last = result;
+    }
+    for (auto i = 181; i <= 270; ++i) {
+        const auto angle_in_radians = (double(i) * pi) / 180.0;
+        SCOPED_TRACE(trace_msg(i, angle_in_radians));
+        const auto result = sin(type(angle_in_radians));
+        EXPECT_LE(result, last);
+        last = result;
+    }
+    for (auto i = 271; i <= 360; ++i) {
+        const auto angle_in_radians = (double(i) * pi) / 180.0;
+        SCOPED_TRACE(trace_msg(i, angle_in_radians));
+        const auto result = sin(type(angle_in_radians));
+        EXPECT_GE(result, last);
+        last = result;
+    }
+}
+
+TYPED_TEST(fixed_math_, sin_ulps)
+{
+    using type = typename TestFixture::type;
+    constexpr auto ulps = 2;
+    for (auto i = -180; i <= 180; ++i) {
+        const auto angle_in_radians = (type(i) * pi) / 180;
+        const auto expected = type(std::sin(double(angle_in_radians)));
+        const auto expected_hi = next_after<ulps>(expected, type(+2.0));
+        const auto expected_lo = next_after<ulps>(expected, type(-2.0));
+        const auto result = sin(angle_in_radians);
+        std::ostringstream os;
+        os << "for angle of " << i << " degrees, or " << angle_in_radians << " radians";
+        os << ", expected=" << expected;
+        SCOPED_TRACE(os.str());
+        EXPECT_LE(result, type(+1));
+        EXPECT_GE(result, type(-1));
+        const auto result_hi = next_after<ulps>(result, type(+2));
+        const auto result_lo = next_after<ulps>(result, type(-2));
+        EXPECT_GE(result_hi, expected_lo);
+        EXPECT_LE(result_lo, expected_hi);
+    }
+}
+
+TYPED_TEST(fixed_math_, sin)
+{
+    using type = typename TestFixture::type;
+    for (auto i = 0; i < 90; ++i) {
+        const auto angle_in_radians = (double(i) * pi) / 180.0;
+        const auto expected = std::sin(angle_in_radians);
+        const auto abs_err = expected * ((sizeof(type) > 4u)? 0.001: 0.4);
+        std::ostringstream os;
+        os << "for angle of " << i << " degrees, or " << angle_in_radians << " radians";
+        SCOPED_TRACE(os.str());
+        const auto result = sin(type(angle_in_radians));
+        EXPECT_NEAR(double(result), expected, abs_err);
+        EXPECT_LE(double(result), +1.0);
+        EXPECT_GE(double(result), -1.0);
+    }
+    for (auto i = 90; i < 180; ++i) {
+        const auto angle_in_radians = (double(i) * pi) / 180.0;
+        const auto expected = std::sin(angle_in_radians);
+        const auto abs_err = expected * ((sizeof(type) > 4u)? 0.03: 0.8);
+        std::ostringstream os;
+        os << "for angle of " << i << " degrees, or " << angle_in_radians << " radians";
+        SCOPED_TRACE(os.str());
+        const auto result = sin(type(angle_in_radians));
+        EXPECT_NEAR(double(result), expected, abs_err);
+        EXPECT_LE(double(result), +1.0);
+        EXPECT_GE(double(result), -1.0);
     }
 }
 
@@ -463,6 +632,22 @@ TEST(fixed_math, nextafter)
     EXPECT_EQ(static_cast<double>(nextafter(fixed_32_2(0), fixed_32_2( 0))),  0.0);
     EXPECT_EQ(static_cast<double>(nextafter(fixed_32_2(0), fixed_32_2(+1))), +0.25);
     EXPECT_EQ(static_cast<double>(nextafter(fixed_32_2(0), fixed_32_2(-1))), -0.25);
+}
+
+TYPED_TEST(fixed_math_, nextafter_upward_like_adding_min)
+{
+    using type = typename TestFixture::type;
+    EXPECT_EQ(nextafter(type(0), type(1)), type::get_min());
+    EXPECT_EQ(nextafter(type::get_min(), type(1)), type::get_min() + type::get_min());
+    EXPECT_EQ(nextafter(type(-2), type(1)), type(-2) + type::get_min());
+}
+
+TYPED_TEST(fixed_math_, nextafter_downward_like_subtracting_min)
+{
+    using type = typename TestFixture::type;
+    EXPECT_EQ(nextafter(type(0), type(-1)), -type::get_min());
+    EXPECT_EQ(nextafter(-type::get_min(), -type(1)), -type::get_min() - type::get_min());
+    EXPECT_EQ(nextafter(type(+2), type(1)), type(2) - type::get_min());
 }
 
 TYPED_TEST(fixed_math_, nextafter_to_higher_is_higher)

@@ -9,7 +9,8 @@
 #include <realnumb/fixed.hpp>
 
 /// @brief Template specialization of numeric limits for fixed types.
-/// @see https://en.cppreference.com/w/cpp/types/numeric_limits
+/// @see https://en.cppreference.com/w/cpp/types/numeric_limits.
+/// @see https://en.wikipedia.org/wiki/IEEE_754.
 template <typename BT, unsigned int FB>
 class std::numeric_limits<realnumb::fixed<BT,FB>>
 {
@@ -83,7 +84,7 @@ public:
 
     static constexpr bool traps = false; ///< Doesn't do traps.
     static constexpr bool tinyness_before = false; ///< Doesn't detect <code>tinyness</code> before rounding.
-    static constexpr float_round_style round_style = round_toward_zero; ///< Rounds down.
+    static constexpr float_round_style round_style = round_to_nearest; ///< Rounding like IEEE 754
 };
 
 #endif // REALNUMB_FIXEDLIMITS_HPP
