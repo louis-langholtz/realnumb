@@ -1,18 +1,25 @@
-file(GLOB REALNUMB_SRCS "source/realnumb/*.cpp")
-file(GLOB REALNUMB_HDRS "include/realnumb/*.hpp")
-
 if (${REALNUMB_ENABLE_COVERAGE} AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	message(STATUS "lib: Adding definitions for coverage analysis.")
 	add_definitions(--coverage)
 endif()
 
 set(libinc
+	include/realnumb/numbers.hpp
 	include/realnumb/fixed.hpp
 	include/realnumb/fixed_limits.hpp
 	include/realnumb/fixed_math.hpp
+	include/realnumb/is_arithmetic.hpp
+	include/realnumb/math.hpp
+	include/realnumb/taylor_series.hpp
 	)
+file(GLOB REALNUMB_HDRS "include/realnumb/*.hpp")
+if(NOT "${libinc}" STREQUAL "${REALNUMB_HDRS}")
+	message(STATUS "mismatch of headers between variable & file system")
+endif()
+
 set(libsrc
 )
+file(GLOB REALNUMB_SRCS "source/realnumb/*.cpp")
 
 #add_library(realnumb ${libsrc})
 add_library(realnumb INTERFACE ${libinc})

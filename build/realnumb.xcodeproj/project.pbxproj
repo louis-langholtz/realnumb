@@ -13,6 +13,10 @@
 		991988BB2AE0D5DE0076F969 /* fixed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 991988BA2AE0D5DE0076F969 /* fixed.cpp */; };
 		991988C42AE3FFEB0076F969 /* fixed_math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 991988C32AE3FFEB0076F969 /* fixed_math.cpp */; };
 		991988C62AE4D8390076F969 /* fixed_limits.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 991988C52AE4D8390076F969 /* fixed_limits.cpp */; };
+		999EBBE72AED9A1A0002F700 /* is_arithmetic.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 999EBBE52AED9A1A0002F700 /* is_arithmetic.hpp */; };
+		999EBBEB2AED9BAE0002F700 /* taylor_series.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 999EBBE92AED9BAE0002F700 /* taylor_series.hpp */; };
+		999EBBEF2AEDA36E0002F700 /* numbers.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 999EBBED2AEDA36E0002F700 /* numbers.hpp */; };
+		999EBBF32AEDA9E20002F700 /* math.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 999EBBF12AEDA9E20002F700 /* math.hpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -38,6 +42,10 @@
 		991988BA2AE0D5DE0076F969 /* fixed.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fixed.cpp; sourceTree = "<group>"; };
 		991988C32AE3FFEB0076F969 /* fixed_math.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = fixed_math.cpp; sourceTree = "<group>"; };
 		991988C52AE4D8390076F969 /* fixed_limits.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fixed_limits.cpp; sourceTree = "<group>"; };
+		999EBBE52AED9A1A0002F700 /* is_arithmetic.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = is_arithmetic.hpp; sourceTree = "<group>"; };
+		999EBBE92AED9BAE0002F700 /* taylor_series.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = taylor_series.hpp; sourceTree = "<group>"; };
+		999EBBED2AEDA36E0002F700 /* numbers.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = numbers.hpp; sourceTree = "<group>"; };
+		999EBBF12AEDA9E20002F700 /* math.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = math.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,6 +110,10 @@
 				991988A12AE0840B0076F969 /* fixed.hpp */,
 				991988A22AE0840B0076F969 /* fixed_limits.hpp */,
 				991988A32AE0840B0076F969 /* fixed_math.hpp */,
+				999EBBE52AED9A1A0002F700 /* is_arithmetic.hpp */,
+				999EBBF12AEDA9E20002F700 /* math.hpp */,
+				999EBBED2AEDA36E0002F700 /* numbers.hpp */,
+				999EBBE92AED9BAE0002F700 /* taylor_series.hpp */,
 			);
 			path = realnumb;
 			sourceTree = "<group>";
@@ -147,9 +159,13 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				999EBBE72AED9A1A0002F700 /* is_arithmetic.hpp in Headers */,
 				991988A72AE0840B0076F969 /* fixed_limits.hpp in Headers */,
+				999EBBEF2AEDA36E0002F700 /* numbers.hpp in Headers */,
 				991988A62AE0840B0076F969 /* fixed.hpp in Headers */,
 				991988A82AE0840B0076F969 /* fixed_math.hpp in Headers */,
+				999EBBEB2AED9BAE0002F700 /* taylor_series.hpp in Headers */,
+				999EBBF32AEDA9E20002F700 /* math.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

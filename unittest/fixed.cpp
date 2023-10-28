@@ -131,7 +131,7 @@ TEST(fixed, get_max)
 {
     EXPECT_NEAR(static_cast<double>(fixed32::get_max()), 4194303.99609375, 0.0001);
 #ifdef REALNUMB_INT128
-    EXPECT_NEAR(static_cast<double>(fixed64::get_max()), 549755813888, 0.0);
+    EXPECT_NEAR(static_cast<double>(fixed64::get_max()), 549755813888.0, 0.0);
 #endif
 }
 
@@ -139,7 +139,7 @@ TEST(fixed, get_lowest)
 {
     EXPECT_EQ(static_cast<double>(fixed32::get_lowest()), -4194303.99609375);
 #ifdef REALNUMB_INT128
-    EXPECT_EQ(static_cast<double>(fixed64::get_lowest()), -549755813888);
+    EXPECT_EQ(static_cast<double>(fixed64::get_lowest()), -549755813888.0);
 #endif
 }
 
@@ -183,6 +183,9 @@ TYPED_TEST(fixed_, Addition)
         type b{val};
         EXPECT_EQ(a + b, type(val * 2));
     }
+    EXPECT_EQ(type::get_max() + type::get_min(), type::get_positive_infinity());
+    EXPECT_EQ(type::get_max() + type::get_max(), type::get_positive_infinity());
+    EXPECT_EQ(type::get_max() + type::get_lowest(), type(0));
 }
 
 TYPED_TEST(fixed_, InfinityPlusValidIsInfinity)
@@ -196,7 +199,7 @@ TYPED_TEST(fixed_, InfinityPlusValidIsInfinity)
     EXPECT_EQ(type::get_positive_infinity() + type::get_positive_infinity(), type::get_positive_infinity());
 }
 
-TYPED_TEST(fixed_, EqualSubtraction)
+TYPED_TEST(fixed_, Subtraction)
 {
     using type = typename TestFixture::type;
     for (auto val = 0; val < 100; ++val)
@@ -205,6 +208,9 @@ TYPED_TEST(fixed_, EqualSubtraction)
         type b{val};
         EXPECT_EQ(a - b, type(0));
     }
+    EXPECT_EQ(type::get_lowest() - type::get_min(), type::get_negative_infinity());
+    EXPECT_EQ(type::get_lowest() - type::get_max(), type::get_negative_infinity());
+    EXPECT_EQ(type::get_lowest() - -type::get_max(), type(0));
 }
 
 TYPED_TEST(fixed_, OppositeSubtraction)
@@ -231,6 +237,8 @@ TYPED_TEST(fixed_, Multiplication)
     EXPECT_EQ(type(181) * type(181), type(32761));
     EXPECT_EQ(type(0.5) * type(0.5), type(0.25));
     EXPECT_NEAR(double(type(-0.05) * type(0.05)), double(type(-0.0025)), 0.0001);
+    EXPECT_EQ(type::get_min() * type::get_min(), type(0));
+    EXPECT_EQ(type::get_min() * type::scale_factor, type(1));
 }
 
 TYPED_TEST(fixed_, Division)

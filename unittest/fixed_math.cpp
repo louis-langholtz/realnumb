@@ -5,8 +5,7 @@
 #include <realnumb/fixed_math.hpp>
 
 using namespace realnumb;
-
-constexpr auto pi = double{3.14159265358979323846264338327950288};
+using realnumb::numbers::pi;
 
 namespace {
 
@@ -392,6 +391,45 @@ TYPED_TEST(fixed_math_, sin_basic_shape)
         const auto angle_in_radians = (double(i) * pi) / 180.0;
         SCOPED_TRACE(trace_msg(i, angle_in_radians));
         const auto result = sin(type(angle_in_radians));
+        EXPECT_GE(result, last);
+        last = result;
+    }
+}
+
+TYPED_TEST(fixed_math_, cos_basic_shape)
+{
+    using type = typename TestFixture::type;
+    auto last = type(1);
+    const auto trace_msg = [](int i, double angle_in_radians) -> std::string {
+        std::ostringstream os;
+        os << "for angle of " << i << " degrees, or " << angle_in_radians << " radians";
+        return os.str();
+    };
+    for (auto i = 1; i <= 90; ++i) {
+        const auto angle_in_radians = (double(i) * pi) / 180.0;
+        SCOPED_TRACE(trace_msg(i, angle_in_radians));
+        const auto result = cos(type(angle_in_radians));
+        EXPECT_LE(result, last);
+        last = result;
+    }
+    for (auto i = 91; i <= 180; ++i) {
+        const auto angle_in_radians = (double(i) * pi) / 180.0;
+        SCOPED_TRACE(trace_msg(i, angle_in_radians));
+        const auto result = cos(type(angle_in_radians));
+        EXPECT_LE(result, last);
+        last = result;
+    }
+    for (auto i = 181; i <= 270; ++i) {
+        const auto angle_in_radians = (double(i) * pi) / 180.0;
+        SCOPED_TRACE(trace_msg(i, angle_in_radians));
+        const auto result = cos(type(angle_in_radians));
+        EXPECT_GE(result, last);
+        last = result;
+    }
+    for (auto i = 271; i <= 360; ++i) {
+        const auto angle_in_radians = (double(i) * pi) / 180.0;
+        SCOPED_TRACE(trace_msg(i, angle_in_radians));
+        const auto result = cos(type(angle_in_radians));
         EXPECT_GE(result, last);
         last = result;
     }

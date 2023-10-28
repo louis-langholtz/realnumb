@@ -6,7 +6,10 @@
 
 #include <cmath>
 
+#include <realnumb/numbers.hpp>
 #include <realnumb/fixed.hpp>
+#include <realnumb/math.hpp>
+#include <realnumb/taylor_series.hpp>
 
 namespace realnumb {
 
@@ -14,13 +17,10 @@ namespace detail {
 
 /// @brief fixed point pi value.
 template <typename BT, unsigned int FB>
-constexpr auto FixedPi = fixed<BT, FB>{3.14159265358979323846264338327950288};
+constexpr auto FixedPi = fixed<BT, FB>{realnumb::numbers::pi};
 
 /// @brief Default iterations for @c exp function.
 constexpr auto DefaultExpIterations = 6;
-
-/// @brief Default iterations for @c log function.
-constexpr auto DefaultLogIterations = 6;
 
 /// @brief Default iterations for @c sin function.
 constexpr auto DefaultSinIterations = 5;
@@ -31,54 +31,11 @@ constexpr auto DefaultCosIterations = 5;
 /// @brief Default iterations for @c atan function.
 constexpr auto DefaultAtanIterations = 5;
 
-/// @brief Computes the factorial.
-constexpr auto factorial(std::int64_t n)
-{
-    // n! = n·(n – 1)·(n – 2) · · · 3·2·1
-    auto res = n;
-    for (--n; n > 1; --n)
-    {
-        res *= n;
-    }
-    return res;
-}
-
-/// @brief Computes Euler's number raised to the given power argument.
-/// @note Uses Maclaurin series approximation.
-/// @see https://en.cppreference.com/w/cpp/numeric/math/exp
-/// @see https://en.wikipedia.org/wiki/Taylor_series
-/// @see https://en.wikipedia.org/wiki/Exponentiation
-/// @see https://en.wikipedia.org/wiki/Exponential_function
-template <typename BT, unsigned int FB, int N = DefaultExpIterations>
-constexpr auto exp(fixed<BT, FB> arg) -> fixed<BT, FB>
-{
-    const auto doReciprocal = (arg < 0);
-    if (doReciprocal)
-    {
-        arg = -arg;
-    }
-    // Maclaurin series approximation...
-    // e^x = sum(x^n/n!) for n =0 to infinity.
-    // e^x = 1 + x + x^2/2! + x^3/3! + ...
-    // Note: e^(x+y) = e^x * e^y.
-    // Note: convergence is slower for arg > 2 and overflow happens by i == 9
-    auto res = arg + 1;
-    auto last = arg;
-    for (auto i = 2; (last != 0) && (i < N); ++i)
-    {
-        // have to avoid unnecessarily overflowing...
-        last /= i; // for factorial
-        last *= arg;
-        res += last;
-    }
-    return doReciprocal? 1 / res: res;
-}
-
 /// @brief Computes the natural logarithm.
 /// @note A better method may be explained in https://math.stackexchange.com/a/61236/408405
 /// @see https://en.cppreference.com/w/cpp/numeric/math/log
 /// @see https://en.wikipedia.org/wiki/Natural_logarithm
-template <typename BT, unsigned int FB, int N = DefaultLogIterations>
+template <int N, typename BT, unsigned int FB>
 constexpr auto log(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
     if (arg.isnan() || (arg < 0))
@@ -123,114 +80,6 @@ constexpr auto log(fixed<BT, FB> arg) -> fixed<BT, FB>
     {
         pt *= arg;
         res += pt / i;
-    }
-    return res;
-}
-
-/// @brief Computes the sine of the given argument via Maclaurin series approximation.
-/// @see https://en.wikipedia.org/wiki/Taylor_series
-template <typename BT, unsigned int FB, int N = DefaultSinIterations>
-constexpr auto sin(fixed<BT, FB> arg) -> fixed<BT, FB>
-{
-    // Maclaurin series approximation...
-    // sin x = sum((-1^n)*(x^(2n+1))/((2n+1)!))
-    // sin(2) = 0.90929742682
-    // x - (x^3)/6 + (x^5)/120 - (x^7)/5040 + (x^9)/362880 + (x^11)/39916800
-    // 2 - 8/6 = 0.666
-    // 2 - 8/6 + 32/120 = 0.9333
-    // 2 - 8/6 + 32/120 - 128/5040 = 0.90793650793
-    // 2 - 8/6 + 32/120 - 128/5040 + 512/362880 = 0.90934744268
-    auto res = arg;
-    auto sgn = -1;
-    constexpr auto last = 2 * N + 1;
-    auto pt = arg;
-    auto ft = BT(1);
-#ifndef NDEBUG
-    auto last_ft = ft;
-#endif
-    auto last_term = fixed<BT, FB>::get_max();
-    for (auto i = 3; i <= last; i += 2)
-    {
-        ft *= (i - 1) * i;
-#ifndef NDEBUG
-        assert(ft > last_ft); // confirm no overflow of ft
-        last_ft = ft;
-#endif
-        pt *= arg * arg;
-        const auto term = pt / ft;
-        if (abs(term) >= abs(last_term)) {
-            break;
-        }
-        last_term = term;
-        res += sgn * term;
-        sgn = -sgn;
-    }
-#ifndef NDEBUG
-    constexpr auto positive_one = fixed<BT, FB>(+1);
-    constexpr auto negative_one = fixed<BT, FB>(-1);
-    assert(res >= negative_one);
-    assert(res <= positive_one);
-#endif
-    return res;
-}
-
-/// @brief Computes the cosine of the given argument via Maclaurin series approximation.
-/// @see https://en.wikipedia.org/wiki/Taylor_series
-template <typename BT, unsigned int FB, int N = DefaultCosIterations>
-constexpr auto cos(fixed<BT, FB> arg) -> fixed<BT, FB>
-{
-    // Maclaurin series approximation...
-    // cos x = sum((-1^n)*(x^(2n))/(2n)!)
-    // cos(2) = -0.41614683654
-    // 1 - 2^2/2 = -1
-    // 1 - 2^2/2 + 2^4/24 = -0.3333
-    // 1 - 2^2/2 + 2^4/24 - 2^6/720 = -0.422
-    auto res = fixed<BT, FB>{1};
-    auto sgn = -1;
-    constexpr auto last = 2 * N;
-    auto ft = 1;
-    auto pt = fixed<BT, FB>{1};
-    for (auto i = 2; i <= last; i += 2)
-    {
-        ft *= (i - 1) * i;
-        pt *= arg * arg;
-        const auto term = pt / ft;
-        res += sgn * term;
-        sgn = -sgn;
-    }
-    return res;
-}
-
-/// @brief Computes the arctangent of the given argument via Maclaurin series approximation.
-/// @see https://en.cppreference.com/w/cpp/numeric/math/atan
-/// @see https://en.wikipedia.org/wiki/Taylor_series
-template <typename BT, unsigned int FB, int N = DefaultAtanIterations>
-constexpr auto atan(fixed<BT, FB> arg) -> fixed<BT, FB>
-{
-    // Note: if (x > 0) then arctan(x) ==  Pi/2 - arctan(1/x)
-    //       if (x < 0) then arctan(x) == -Pi/2 - arctan(1/x).
-    const auto doReciprocal = (abs(arg) > 1);
-    if (doReciprocal)
-    {
-        arg = 1 / arg;
-    }
-    // Maclaurin series approximation...
-    // For |arg| <= 1, arg != +/- i
-    // If |arg| > 1 the result is too wrong which is why the reciprocal is done then.
-    auto res = arg;
-    auto sgn = -1;
-    const auto last = 2 * N + 1;
-    auto pt = arg;
-    for (auto i = 3; i <= last; i += 2)
-    {
-        pt *= arg * arg;
-        const auto term = pt / i;
-        res += sgn * term;
-        sgn = -sgn;
-    }
-    if (doReciprocal)
-    {
-        return (arg > 0)? FixedPi<BT, FB> / 2 - res: -FixedPi<BT, FB> / 2 - res;
     }
     return res;
 }
@@ -309,14 +158,6 @@ static constexpr auto ExpIterationsForLarger = 24;
 /// @see fixed
 /// @see https://en.cppreference.com/w/cpp/numeric/math
 /// @{
-
-/// @brief Computes the absolute value.
-/// @see https://en.cppreference.com/w/cpp/numeric/math/fabs
-template <typename BT, unsigned int FB>
-constexpr auto abs(fixed<BT, FB> arg) -> fixed<BT, FB>
-{
-    return (arg >= 0)? arg: -arg;
-}
 
 /// @brief Computes the value of the given number raised to the given power.
 /// @note This implementation is for raising a given value to an integer power.
@@ -443,13 +284,10 @@ template <typename BT, unsigned int FB>
 constexpr auto sin(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
     if (arg.isnan()) {
-        return arg;
+        return fixed<BT, FB>::get_nan();
     }
     if (!arg.isfinite()) {
         return fixed<BT, FB>::get_nan();
-    }
-    if (arg == fixed<BT, FB>()) {
-        return arg;
     }
     arg = detail::angular_normalize(arg);
     // detail::sin seems more accurate within -90 to +90, so convert 91 to 89, etc...
@@ -459,7 +297,10 @@ constexpr auto sin(fixed<BT, FB> arg) -> fixed<BT, FB>
     else if (arg < -detail::FixedPi<BT, FB> / 2) {
         arg = -detail::FixedPi<BT, FB> - arg;
     }
-    return detail::sin<BT, FB>(arg);
+    if (arg == fixed<BT, FB>(0)) {
+        return fixed<BT, FB>(0);
+    }
+    return taylor_series::sin<detail::DefaultSinIterations>(arg);
 }
 
 /// @brief Computes the cosine of the argument for fixed types.
@@ -467,8 +308,17 @@ constexpr auto sin(fixed<BT, FB> arg) -> fixed<BT, FB>
 template <typename BT, unsigned int FB>
 constexpr auto cos(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
-    arg = detail::angular_normalize(arg);
-    return detail::cos<BT, FB>(arg);
+    if (arg.isnan()) {
+        return fixed<BT, FB>::get_nan();
+    }
+    if (!arg.isfinite()) {
+        return fixed<BT, FB>::get_nan();
+    }
+    if (arg == fixed<BT, FB>(0)) {
+        return fixed<BT, FB>(1);
+    }
+    // Use sin function with angle shifted by 1/2 pi...
+    return sin(arg + detail::FixedPi<BT, FB> / 2);
 }
 
 /// @brief Computes the arc tangent.
@@ -489,7 +339,7 @@ constexpr auto atan(fixed<BT, FB> arg) -> fixed<BT, FB>
     {
         return -detail::FixedPi<BT, FB> / 2;
     }
-    return detail::atan<BT, FB>(arg);
+    return taylor_series::atan<detail::DefaultAtanIterations>(arg);
 }
 
 /// @brief Computes the multi-valued inverse tangent.
@@ -525,8 +375,8 @@ template <typename BT, unsigned int FB>
 constexpr auto log(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
     return (arg < detail::LogMaxForLowerIterations)
-        ? detail::log<BT, FB, detail::LogIterationsForSmaller>(arg)
-        : detail::log<BT, FB, detail::LogIterationsForLarger>(arg);
+        ? detail::log<detail::LogIterationsForSmaller>(arg)
+        : detail::log<detail::LogIterationsForLarger>(arg);
 }
 
 /// @brief Computes the Euler number raised to the power of the given argument.
@@ -535,8 +385,8 @@ template <typename BT, unsigned int FB>
 constexpr auto exp(fixed<BT, FB> arg) -> fixed<BT, FB>
 {
     return (abs(arg) <= detail::ExpMaxForLowerIterations)
-        ? detail::exp<BT, FB, detail::DefaultExpIterations>(arg)
-        : detail::exp<BT, FB, detail::ExpIterationsForLarger>(arg);
+        ? taylor_series::exp<detail::DefaultExpIterations>(arg)
+        : taylor_series::exp<detail::ExpIterationsForLarger>(arg);
 }
 
 /// @brief Computes the value of the base number raised to the power of the exponent.

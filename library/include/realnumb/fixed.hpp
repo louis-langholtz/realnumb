@@ -374,12 +374,11 @@ public:
         }
         else if (isfinite() && val.isfinite())
         {
-            const auto result = wider_type{m_value} + val.m_value;
-            m_value = (result > get_max().m_value) // newline!
-                ? get_positive_infinity().m_value // newline!
-                : (result < get_lowest().m_value) // newline!
-                    ? get_negative_infinity().m_value // newline!
-                    : static_cast<value_type>(result);
+            m_value = ((m_value > 0) && (val.m_value > get_max().m_value - m_value)) // newline!
+                ? get_positive_infinity().m_value // overflow
+                : ((m_value < 0) && (val.m_value < get_lowest().m_value - m_value)) // newline!
+                    ? get_negative_infinity().m_value // underflow
+                    : m_value + val.m_value;
         }
         return *this;
     }
@@ -404,12 +403,11 @@ public:
         }
         else if (isfinite() && val.isfinite())
         {
-            const auto result = wider_type{m_value} - val.m_value;
-            m_value = (result > get_max().m_value) // newline!
-                ? get_positive_infinity().m_value // newline!
-                : (result < get_lowest().m_value) // newline!
-                    ? get_negative_infinity().m_value // newline!
-                    : static_cast<value_type>(result);
+            m_value = ((m_value > 0) && (val.m_value < get_lowest().m_value + m_value)) // newline!
+                ? get_positive_infinity().m_value // overflow
+                : ((m_value < 0) && (val.m_value > get_max().m_value + m_value)) // newline!
+                    ? get_negative_infinity().m_value // underflow
+                    : m_value - val.m_value;
         }
         return *this;
     }
