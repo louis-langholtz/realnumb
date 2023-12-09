@@ -640,6 +640,10 @@ inline ::std::ostream& operator<<(::std::ostream& os, const fixed<BT, FB>& value
 /// @see https://en.wikipedia.org/wiki/Q_(number_format)
 using fixed32 = fixed<std::int32_t, detail::fixed_default<std::int32_t>::fraction_bits>;
 
+// Assert basic type traits...
+static_assert(std::is_trivially_copyable_v<fixed32>); // can safely copy with std::memcpy!
+static_assert(std::is_trivial_v<fixed32>); // trivially copyable & trivial default ctor
+
 // fixed32 free functions.
 
 /// @brief Addition operator.
@@ -733,6 +737,10 @@ constexpr bool operator > (fixed32 lhs, fixed32 rhs) noexcept
 /// @see https://en.wikipedia.org/wiki/Q_(number_format)
 ///
 using fixed64 = fixed<std::int64_t,detail::fixed_default<std::int64_t>::fraction_bits>;
+
+// Assert basic type traits...
+static_assert(std::is_trivially_copyable_v<fixed64>); // can safely copy with std::memcpy!
+static_assert(std::is_trivial_v<fixed64>); // trivially copyable & trivial default ctor
 
 /// @brief Addition operator.
 constexpr fixed64 operator+ (fixed64 lhs, fixed64 rhs) noexcept

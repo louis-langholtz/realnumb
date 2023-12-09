@@ -87,4 +87,14 @@ public:
     static constexpr float_round_style round_style = round_to_nearest; ///< Rounding like IEEE 754
 };
 
+// Assert basic constants of numeric_limits for fixed32...
+static_assert(!std::numeric_limits<realnumb::fixed32>::is_integer);
+static_assert(!std::numeric_limits<realnumb::fixed32>::is_modulo);
+static_assert(std::numeric_limits<realnumb::fixed32>::is_specialized);
+static_assert(std::numeric_limits<realnumb::fixed32>::is_signed);
+static_assert(std::numeric_limits<realnumb::fixed32>::is_bounded);
+static_assert(std::numeric_limits<realnumb::fixed32>::is_exact);
+static_assert(std::numeric_limits<realnumb::fixed32>::has_infinity);
+static_assert(std::numeric_limits<realnumb::fixed32>::has_quiet_NaN);
+
 #endif // REALNUMB_FIXEDLIMITS_HPP
