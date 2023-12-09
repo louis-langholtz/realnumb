@@ -1,3 +1,9 @@
+# Ignore Qt Creator files
+CMakeLists.txt.user
+
+# Ignore Xcode files
+build/realnumb.xcodeproj/xcshareddata/
+
 # Prerequisites
 *.d
 
